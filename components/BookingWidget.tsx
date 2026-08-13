@@ -117,7 +117,7 @@ export function BookingWidget() {
       setConsent(false);
       await loadSlots();
     } catch {
-      setError("Сеть недоступна. Попробуйте ещё раз или напишите в WhatsApp.");
+      setError("Сеть недоступна. Попробуйте ещё раз или напишите в MAX или Telegram.");
     } finally {
       setSending(false);
     }
@@ -137,13 +137,26 @@ export function BookingWidget() {
           <div className="mt-8 max-w-xl rounded-2xl bg-cream p-6 text-ink">
             <p className="font-serif text-2xl">Готово</p>
             <p className="mt-2 text-ink-soft">{success}</p>
-            <a
-              href={SITE.whatsapp}
-              data-goal="whatsapp_click"
-              className="mt-5 inline-flex rounded-full bg-terracotta px-5 py-2.5 text-sm text-white"
-            >
-              Написать в WhatsApp
-            </a>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href={SITE.max}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-goal="max_click"
+                className="inline-flex rounded-full bg-terracotta px-5 py-2.5 text-sm text-white"
+              >
+                Написать в MAX
+              </a>
+              <a
+                href={SITE.telegram}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-goal="telegram_click"
+                className="inline-flex rounded-full border border-sage px-5 py-2.5 text-sm text-sage-deep"
+              >
+                Написать в Telegram
+              </a>
+            </div>
           </div>
         ) : (
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -152,14 +165,27 @@ export function BookingWidget() {
                 <p className="text-cream/70">Загружаю свободные слоты…</p>
               ) : days.length === 0 ? (
                 <div className="rounded-2xl border border-cream/15 p-6">
-                  <p>Свободных слотов пока нет — напишите в WhatsApp, подберём время.</p>
-                  <a
-                    href={SITE.whatsapp}
-                    data-goal="whatsapp_click"
-                    className="mt-4 inline-flex rounded-full bg-terracotta px-5 py-2.5 text-sm text-white"
-                  >
-                    Написать в WhatsApp
-                  </a>
+                  <p>Свободных слотов пока нет — напишите в MAX или Telegram, подберём время.</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <a
+                      href={SITE.max}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-goal="max_click"
+                      className="inline-flex rounded-full bg-terracotta px-5 py-2.5 text-sm text-white"
+                    >
+                      Написать в MAX
+                    </a>
+                    <a
+                      href={SITE.telegram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-goal="telegram_click"
+                      className="inline-flex rounded-full border border-sage px-5 py-2.5 text-sm text-cream"
+                    >
+                      Написать в Telegram
+                    </a>
+                  </div>
                 </div>
               ) : (
                 <>

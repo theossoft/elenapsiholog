@@ -48,7 +48,7 @@ Do not introduce neon, pure black, medical blue, or purple gradients.
 ## CTA hierarchy
 
 1. Terracotta filled: «Записаться на сессию»
-2. Sage outline: WhatsApp / secondary
+2. Sage outline: MAX / Telegram / secondary
 3. Text link: legal, footer
 
 Never stack two filled terracotta buttons in one viewport.

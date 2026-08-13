@@ -11,7 +11,7 @@ Voice: warm, adult, precise. Second person «вы». Short paragraphs. No clinic
 
 - Describe process: dialogue, awareness, support, joint search for solutions.
 - Facts: 13 years, gestalt + CBT techniques, online 55 min, education.
-- Soft CTA: «Записаться на сессию», «Выбрать время», «Написать в WhatsApp».
+- Soft CTA: «Записаться на сессию», «Выбрать время», «Написать в MAX», «Написать в Telegram».
 
 ## Forbidden
 
@@ -35,8 +35,8 @@ Example headline register:
 
 - Form: name, phone, optional Telegram, optional short request.
 - Consent: explicit 152-FZ checkbox, link to `/privacy`.
-- Success: «Заявка принята. Я напишу в WhatsApp или Telegram, чтобы подтвердить время.»
-- Empty calendar: «Свободных слотов пока нет — напишите в WhatsApp, подберём время.»
+- Success: «Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.»
+- Empty calendar: «Свободных слотов пока нет — напишите в MAX или Telegram, подберём время.»
 
 ## Admin UI
 

@@ -25,13 +25,22 @@ export function Hero() {
               Записаться на сессию
             </a>
             <a
-              href={SITE.whatsapp}
+              href={SITE.max}
               target="_blank"
               rel="noopener noreferrer"
-              data-goal="whatsapp_click"
+              data-goal="max_click"
               className="rounded-full border border-sage px-6 py-3 text-sm text-sage-deep transition-colors hover:bg-sage hover:text-cream"
             >
-              Написать в WhatsApp
+              Написать в MAX
+            </a>
+            <a
+              href={SITE.telegram}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-goal="telegram_click"
+              className="rounded-full border border-sage px-6 py-3 text-sm text-sage-deep transition-colors hover:bg-sage hover:text-cream"
+            >
+              Написать в Telegram
             </a>
           </div>
           <ul className="reveal mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-ink-soft">

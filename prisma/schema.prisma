@@ -19,7 +19,7 @@ model Setting {
   durationMin      Int    @default(55)
   slotStepMin      Int    @default(60)
   meetLink         String @default("")
-  successText      String @default("Заявка принята. Я напишу в WhatsApp или Telegram, чтобы подтвердить время.")
+  successText      String @default("Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.")
   pendingHoldHours Int    @default(12)
   horizonDays      Int    @default(21)
 }

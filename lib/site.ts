@@ -7,7 +7,10 @@ export const SITE = {
   phone: "+79081294116",
   phoneDisplay: "+7 908 129-41-16",
   email: "elena-9081294116@yandex.ru",
-  whatsapp: "https://wa.me/79081294116",
+  max:
+    process.env.NEXT_PUBLIC_MAX_URL ||
+    "https://max.ru/u/f9LHodD0cOJJqU3Z1_EFx27cARnFsgmhBKrMStGK1XTya_w6O_RxdNcSMFU",
+  telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/+79081294116",
   city: "Курск",
   job: "Психолог, гештальт-терапевт",
   sessionMin: 55,
@@ -15,4 +18,4 @@ export const SITE = {
 } as const;
 
 export const FALLBACK_SUCCESS =
-  "Заявка принята. Я напишу в WhatsApp или Telegram, чтобы подтвердить время.";
+  "Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.";

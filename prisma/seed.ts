@@ -14,6 +14,9 @@ async function main() {
     create: { username, passwordHash },
   });
 
+  const successText =
+    "Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.";
+
   await prisma.setting.upsert({
     where: { id: "default" },
     update: {},
@@ -22,12 +25,19 @@ async function main() {
       price: 4000,
       durationMin: 55,
       slotStepMin: 60,
-      successText:
-        "Заявка принята. Я напишу в WhatsApp или Telegram, чтобы подтвердить время.",
+      successText,
       pendingHoldHours: 12,
       horizonDays: 21,
     },
   });
+
+  const settings = await prisma.setting.findUnique({ where: { id: "default" } });
+  if (settings?.successText.includes("WhatsApp")) {
+    await prisma.setting.update({
+      where: { id: "default" },
+      data: { successText: settings.successText.replaceAll("WhatsApp", "MAX") },
+    });
+  }
 
   const existing = await prisma.weeklyAvailability.count();
   if (existing === 0) {

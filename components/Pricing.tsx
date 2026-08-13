@@ -35,8 +35,24 @@ export function Pricing({ price, duration }: { price: number; duration: number }
           <p className="mt-4 text-xs text-ink-soft">
             Цена на сайте может обновляться. Актуальная стоимость всегда в этом блоке.
             Вопросы — в{" "}
-            <a href={SITE.whatsapp} className="underline" data-goal="whatsapp_click">
-              WhatsApp
+            <a
+              href={SITE.max}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+              data-goal="max_click"
+            >
+              MAX
+            </a>{" "}
+            или{" "}
+            <a
+              href={SITE.telegram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+              data-goal="telegram_click"
+            >
+              Telegram
             </a>
             .
           </p>

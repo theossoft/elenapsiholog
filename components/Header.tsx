@@ -26,13 +26,22 @@ export function Header() {
         </nav>
         <div className="flex items-center gap-2">
           <a
-            href={SITE.whatsapp}
+            href={SITE.max}
             target="_blank"
             rel="noopener noreferrer"
-            data-goal="whatsapp_click"
-            className="hidden rounded-full border border-sage px-4 py-2 text-sm text-sage-deep transition-colors hover:bg-sage hover:text-cream sm:inline-flex"
+            data-goal="max_click"
+            className="hidden rounded-full border border-sage px-4 py-2 text-sm text-sage-deep transition-colors hover:bg-sage hover:text-cream md:inline-flex"
           >
-            WhatsApp
+            MAX
+          </a>
+          <a
+            href={SITE.telegram}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-goal="telegram_click"
+            className="hidden rounded-full border border-sage px-4 py-2 text-sm text-sage-deep transition-colors hover:bg-sage hover:text-cream md:inline-flex"
+          >
+            Telegram
           </a>
           <a
             href="#zapis"

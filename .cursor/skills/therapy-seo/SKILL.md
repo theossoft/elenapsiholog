@@ -35,7 +35,8 @@ Counter id from `NEXT_PUBLIC_METRIKA_ID`. Goals:
 
 - `zapis_click` — any «Записаться» click
 - `booking_success` — successful booking submit
-- `whatsapp_click` — WhatsApp link
+- `max_click` — MAX messenger link
+- `telegram_click` — Telegram link
 
 Load Metrika after cookie consent. Do not block first paint.
 

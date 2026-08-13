@@ -49,7 +49,7 @@ export default function PrivacyPage() {
       <h2 className="font-serif mt-8 text-2xl">Ваши права</h2>
       <p className="mt-2">
         Вы можете запросить уточнение, удаление или отзыв согласия, написав на{" "}
-        {SITE.email} или в WhatsApp.
+        {SITE.email}, в MAX или в Telegram.
       </p>
     </article>
   );

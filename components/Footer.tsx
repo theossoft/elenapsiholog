@@ -16,8 +16,21 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-2 text-sm text-ink-soft">
           <a href="#zapis">Записаться</a>
-          <a href={SITE.whatsapp} data-goal="whatsapp_click">
-            WhatsApp
+          <a
+            href={SITE.max}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-goal="max_click"
+          >
+            MAX
+          </a>
+          <a
+            href={SITE.telegram}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-goal="telegram_click"
+          >
+            Telegram
           </a>
           <Link href="/privacy">Политика конфиденциальности</Link>
           <Link href="/offer">Оферта</Link>
