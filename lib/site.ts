@@ -10,7 +10,7 @@ export const SITE = {
   max:
     process.env.NEXT_PUBLIC_MAX_URL ||
     "https://max.ru/u/f9LHodD0cOJJqU3Z1_EFx27cARnFsgmhBKrMStGK1XTya_w6O_RxdNcSMFU",
-  telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/+79081294116",
+  telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/elena_psy88",
   city: "Курск",
   job: "Психолог, гештальт-терапевт",
   sessionMin: 55,
