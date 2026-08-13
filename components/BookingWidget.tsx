@@ -125,7 +125,7 @@ export function BookingWidget() {
 
   return (
     <section id="zapis" className="bg-ink px-5 py-16 text-cream md:px-8 md:py-24">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto min-w-0 max-w-6xl">
         <p className="text-sm tracking-[0.18em] text-sage uppercase">Запись</p>
         <h2 className="font-serif mt-3 text-3xl md:text-4xl">Выберите удобное время</h2>
         <p className="mt-3 max-w-xl text-cream/75">
@@ -159,8 +159,8 @@ export function BookingWidget() {
             </div>
           </div>
         ) : (
-          <div className="mt-10 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-            <div>
+          <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-2 lg:items-start">
+            <div className="min-w-0">
               {loading ? (
                 <p className="text-cream/70">Загружаю свободные слоты…</p>
               ) : days.length === 0 ? (
@@ -189,7 +189,7 @@ export function BookingWidget() {
                 </div>
               ) : (
                 <>
-                  <div className="flex gap-2 overflow-x-auto pb-2">
+                  <div className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:thin]">
                     {days.map(([key, list]) => (
                       <button
                         key={key}
@@ -198,7 +198,7 @@ export function BookingWidget() {
                           setDay(key);
                           setSelected(null);
                         }}
-                        className={`min-w-[7.5rem] rounded-2xl px-3 py-3 text-left text-sm transition-colors ${
+                        className={`min-w-[7.5rem] shrink-0 rounded-2xl px-3 py-3 text-left text-sm transition-colors ${
                           day === key
                             ? "bg-cream text-ink"
                             : "bg-cream/10 text-cream hover:bg-cream/20"
@@ -229,7 +229,10 @@ export function BookingWidget() {
               )}
             </div>
 
-            <form onSubmit={onSubmit} className="rounded-3xl bg-cream p-6 text-ink md:p-8">
+            <form
+              onSubmit={onSubmit}
+              className="min-w-0 w-full max-w-full rounded-3xl bg-cream p-6 text-ink md:p-8"
+            >
               <p className="font-serif text-2xl">Заявка</p>
               <p className="mt-1 text-sm text-ink-soft">
                 {selected
