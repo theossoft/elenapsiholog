@@ -1,0 +1,14 @@
+---
+description: Always apply landing design, SEO, and ethical copy skills for this psychologist site
+alwaysApply: true
+---
+
+# Landing project rule
+
+Before changing the public site, admin UI, copy, or metadata, read:
+
+- `.cursor/skills/therapy-visual-design/SKILL.md`
+- `.cursor/skills/therapy-seo/SKILL.md`
+- `.cursor/skills/therapy-copy/SKILL.md`
+
+Keep stack: Next.js App Router, Tailwind, Prisma, SQLite. Booking holds a slot (`pending`); payment stays off-site. Do not invent reviews. Do not add medical claims. Admin routes stay `noindex`.

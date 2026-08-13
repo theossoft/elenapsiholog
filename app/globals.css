@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --cream: #f7f1e8;
+  --cream-deep: #efe6d8;
+  --ink: #2c241c;
+  --ink-soft: #5c534a;
+  --sage: #6b7f6a;
+  --sage-deep: #4f5f4e;
+  --terracotta: #c4785a;
+  --terracotta-deep: #a85f44;
+  --line: #e2d6c6;
+}
+
+@theme inline {
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-sage: var(--sage);
+  --color-sage-deep: var(--sage-deep);
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-deep: var(--terracotta-deep);
+  --color-line: var(--line);
+  --font-sans: var(--font-manrope);
+  --font-serif: var(--font-source-serif);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+::selection {
+  background: #d7e0d4;
+}
+
+.font-serif {
+  font-family: var(--font-source-serif), Georgia, serif;
+}
+
+.reveal {
+  animation: rise 0.7s ease both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    animation: none;
+  }
+}
