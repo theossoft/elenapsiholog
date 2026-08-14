@@ -44,18 +44,16 @@ export function Hero({ copy }: { copy: LandingCopy }) {
             </a>
           </div>
           <ul className="reveal mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-ink-soft">
-            <li>
-              <strong className="block font-serif text-xl text-ink">13 лет</strong>
-              практики
-            </li>
-            <li>
-              <strong className="block font-serif text-xl text-ink">800+</strong>
-              сессий на Alter
-            </li>
-            <li>
-              <strong className="block font-serif text-xl text-ink">55 мин</strong>
-              онлайн-встреча
-            </li>
+            {[
+              { value: copy.heroStat1Value, label: copy.heroStat1Label },
+              { value: copy.heroStat2Value, label: copy.heroStat2Label },
+              { value: copy.heroStat3Value, label: copy.heroStat3Label },
+            ].map((stat) => (
+              <li key={stat.value + stat.label}>
+                <strong className="block font-serif text-xl text-ink">{stat.value}</strong>
+                {stat.label}
+              </li>
+            ))}
           </ul>
         </div>
         <div className="relative min-h-[420px] bg-ink md:min-h-full">

@@ -6,11 +6,17 @@ import { DEFAULT_COPY, type LandingCopy } from "@/lib/copy";
 const GROUPS: { title: string; hint: string; fields: { key: keyof LandingCopy; label: string; rows: number }[] }[] = [
   {
     title: "Главный экран",
-    hint: "Это первое, что видит человек. Заголовок — про потребность, без обещания «вылечить».",
+    hint: "Это первое, что видит человек. Заголовок — про потребность, без обещания «вылечить». Цифры внизу — только факты.",
     fields: [
       { key: "heroEyebrow", label: "Строка над заголовком", rows: 1 },
       { key: "heroHeadline", label: "Главный заголовок", rows: 3 },
       { key: "heroLead", label: "Короткий абзац под заголовком", rows: 4 },
+      { key: "heroStat1Value", label: "Цифра 1 (например, 13 лет)", rows: 1 },
+      { key: "heroStat1Label", label: "Подпись 1 (например, практики)", rows: 1 },
+      { key: "heroStat2Value", label: "Цифра 2 (например, 800+)", rows: 1 },
+      { key: "heroStat2Label", label: "Подпись 2 (например, сессий на Alter)", rows: 1 },
+      { key: "heroStat3Value", label: "Цифра 3 (например, 55 мин)", rows: 1 },
+      { key: "heroStat3Label", label: "Подпись 3 (например, онлайн-встреча)", rows: 1 },
     ],
   },
   {
