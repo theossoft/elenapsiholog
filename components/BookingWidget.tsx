@@ -33,7 +33,7 @@ function timeLabel(iso: string) {
   });
 }
 
-export function BookingWidget() {
+export function BookingWidget({ bookingLead }: { bookingLead: string }) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [day, setDay] = useState<string | null>(null);
@@ -128,10 +128,7 @@ export function BookingWidget() {
       <div className="mx-auto min-w-0 max-w-6xl">
         <p className="text-sm tracking-[0.18em] text-sage uppercase">Запись</p>
         <h2 className="font-serif mt-3 text-3xl md:text-4xl">Выберите удобное время</h2>
-        <p className="mt-3 max-w-xl text-cream/75">
-          Слот бронируется после заявки. Я подтверждаю встречу в мессенджере и присылаю
-          способ оплаты. Часовой пояс — Москва.
-        </p>
+        <p className="mt-3 max-w-xl text-cream/75">{bookingLead}</p>
 
         {success ? (
           <div className="mt-8 max-w-xl rounded-2xl bg-cream p-6 text-ink">

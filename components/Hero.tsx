@@ -1,20 +1,20 @@
 import Image from "next/image";
 import { SITE } from "@/lib/site";
+import type { LandingCopy } from "@/lib/copy";
 
-export function Hero() {
+export function Hero({ copy }: { copy: LandingCopy }) {
   return (
     <section id="top" className="border-b border-line">
       <div className="mx-auto grid max-w-6xl items-stretch md:grid-cols-[1.05fr_0.95fr]">
         <div className="flex flex-col justify-center px-5 py-12 md:px-8 md:py-20 lg:py-24">
           <p className="reveal text-sm tracking-[0.18em] text-sage-deep uppercase">
-            Гештальт-терапия · КПТ · онлайн
+            {copy.heroEyebrow}
           </p>
           <h1 className="reveal font-serif mt-4 max-w-xl text-[2.05rem] leading-[1.15] text-ink md:text-5xl">
-            Понять себя и найти опору — в живом диалоге, а не в советах с потолка
+            {copy.heroHeadline}
           </h1>
           <p className="reveal mt-5 max-w-lg text-base leading-relaxed text-ink-soft md:text-lg">
-            Я {SITE.name}, психолог и гештальт-терапевт. Вместе исследуем чувства и
-            находим конкретные шаги, которые можно взять в жизнь.
+            {copy.heroLead}
           </p>
           <div className="reveal mt-8 flex flex-wrap gap-3">
             <a

@@ -12,6 +12,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { GoalClicks } from "@/components/GoalClicks";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
+import { landingCopyFrom } from "@/lib/copy";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export default async function HomePage() {
   const settings = await prisma.setting.findUnique({ where: { id: "default" } });
   const price = settings?.price ?? SITE.defaultPrice;
   const duration = settings?.durationMin ?? SITE.sessionMin;
+  const copy = landingCopyFrom(settings);
 
   return (
     <>
@@ -26,13 +28,13 @@ export default async function HomePage() {
       <GoalClicks />
       <Header />
       <main className="pb-20 md:pb-0">
-        <Hero />
-        <Topics />
-        <HowItWorks />
-        <About />
-        <Pricing price={price} duration={duration} />
+        <Hero copy={copy} />
+        <Topics copy={copy} />
+        <HowItWorks copy={copy} />
+        <About copy={copy} />
+        <Pricing price={price} duration={duration} copy={copy} />
         <Faq />
-        <BookingWidget />
+        <BookingWidget bookingLead={copy.bookingLead} />
       </main>
       <Footer />
       <StickyCta />

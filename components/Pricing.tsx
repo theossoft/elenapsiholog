@@ -1,6 +1,15 @@
 import { SITE } from "@/lib/site";
+import type { LandingCopy } from "@/lib/copy";
 
-export function Pricing({ price, duration }: { price: number; duration: number }) {
+export function Pricing({
+  price,
+  duration,
+  copy,
+}: {
+  price: number;
+  duration: number;
+  copy: LandingCopy;
+}) {
   const formatted = new Intl.NumberFormat("ru-RU").format(price);
 
   return (
@@ -9,10 +18,7 @@ export function Pricing({ price, duration }: { price: number; duration: number }
         <div>
           <p className="text-sm tracking-[0.18em] text-sage-deep uppercase">Стоимость</p>
           <h2 className="font-serif mt-3 text-3xl md:text-4xl">Прозрачные условия</h2>
-          <p className="mt-4 max-w-xl text-ink-soft">
-            Оплата — переводом после того, как я подтвержу время. На сайте ничего
-            списывать не нужно: сначала договариваемся, потом встречаемся.
-          </p>
+          <p className="mt-4 max-w-xl text-ink-soft">{copy.priceLead}</p>
           <ul className="mt-6 space-y-2 text-sm text-ink-soft">
             <li>Формат: онлайн, видеосвязь</li>
             <li>Отмена или перенос — не позднее чем за 24 часа</li>

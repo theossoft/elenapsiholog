@@ -28,7 +28,15 @@ export function SettingsForm() {
     const res = await fetch("/api/admin/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings),
+      body: JSON.stringify({
+        price: settings.price,
+        durationMin: settings.durationMin,
+        slotStepMin: settings.slotStepMin,
+        meetLink: settings.meetLink,
+        successText: settings.successText,
+        pendingHoldHours: settings.pendingHoldHours,
+        horizonDays: settings.horizonDays,
+      }),
     });
     setMessage(res.ok ? "Сохранено." : "Не удалось сохранить.");
   }

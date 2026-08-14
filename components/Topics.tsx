@@ -1,12 +1,13 @@
 import { TEEN_TOPICS, TOPICS } from "@/lib/content";
+import type { LandingCopy } from "@/lib/copy";
 
-export function Topics() {
+export function Topics({ copy }: { copy: LandingCopy }) {
   return (
     <section id="topics" className="px-5 py-16 md:px-8 md:py-24">
       <div className="mx-auto max-w-6xl">
         <p className="text-sm tracking-[0.18em] text-sage-deep uppercase">С чем приходят</p>
         <h2 className="font-serif mt-3 max-w-2xl text-3xl md:text-4xl">
-          Можно прийти без готового «диагноза» — достаточно того, что сейчас тяжело
+          {copy.topicsTitle}
         </h2>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TOPICS.map((topic) => (
@@ -21,10 +22,7 @@ export function Topics() {
         </div>
         <div className="mt-8 rounded-2xl border border-line bg-cream p-6 md:p-8">
           <h3 className="font-serif text-2xl">Подростки 11–18 лет</h3>
-          <p className="mt-2 max-w-2xl text-ink-soft">
-            Работаю с детьми и подростками: страхи, общение, семейные кризисы. Иногда
-            встреча нужна родителю, иногда — подростку. Это обсуждаем заранее.
-          </p>
+          <p className="mt-2 max-w-2xl text-ink-soft">{copy.teensLead}</p>
           <ul className="mt-4 flex flex-wrap gap-2">
             {TEEN_TOPICS.map((item) => (
               <li

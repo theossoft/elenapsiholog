@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { EDUCATION, METHODS } from "@/lib/content";
+import type { LandingCopy } from "@/lib/copy";
 
-export function About() {
+export function About({ copy }: { copy: LandingCopy }) {
   return (
     <section id="about" className="px-5 py-16 md:px-8 md:py-24">
       <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[0.9fr_1.1fr]">
@@ -16,17 +17,12 @@ export function About() {
         </div>
         <div>
           <p className="text-sm tracking-[0.18em] text-sage-deep uppercase">Обо мне</p>
-          <h2 className="font-serif mt-3 text-3xl md:text-4xl">
-            Елена Иванова — психолог, гештальт-терапевт
-          </h2>
+          <h2 className="font-serif mt-3 text-3xl md:text-4xl">{copy.aboutTitle}</h2>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-soft">
-            Больше 13 лет помогаю взрослым, подросткам и семьям лучше понимать чувства,
-            выстраивать отношения и опираться на себя. В работе соединяю глубину гештальта
-            с ясными техниками КПТ: не только «поговорить», но и найти, что можно изменить.
+            {copy.aboutP1}
           </p>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-soft">
-            Верю, что осознание своих эмоций и мыслей — первый шаг. Дальше идём вместе,
-            в диалоге, в темпе, который вам подходит.
+            {copy.aboutP2}
           </p>
           <h3 className="mt-8 font-serif text-2xl">Образование</h3>
           <ul className="mt-4 space-y-4">
