@@ -7,8 +7,6 @@ import { DEFAULT_COPY } from "@/lib/copy";
 export const dynamic = "force-dynamic";
 
 const COPY_KEYS = Object.keys(DEFAULT_COPY) as (keyof typeof DEFAULT_COPY)[];
-const DEFAULT_SUCCESS =
-  "Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -31,7 +29,6 @@ export async function PUT(request: Request) {
   if (body.durationMin != null) data.durationMin = Number(body.durationMin) || 55;
   if (body.slotStepMin != null) data.slotStepMin = Number(body.slotStepMin) || 60;
   if (body.meetLink != null) data.meetLink = String(body.meetLink);
-  if (body.successText != null) data.successText = String(body.successText);
   if (body.pendingHoldHours != null) {
     data.pendingHoldHours = Number(body.pendingHoldHours) || 12;
   }
@@ -47,6 +44,9 @@ export async function PUT(request: Request) {
   const copyFromBody = Object.fromEntries(
     COPY_KEYS.filter((key) => body[key] != null).map((key) => [key, String(body[key])]),
   );
+  if (typeof copyFromBody.successText === "string") {
+    copyFromBody.successText = copyFromBody.successText.replaceAll("WhatsApp", "MAX");
+  }
 
   const settings = await prisma.setting.upsert({
     where: { id: "default" },
@@ -57,7 +57,6 @@ export async function PUT(request: Request) {
       durationMin: Number(body.durationMin) || 55,
       slotStepMin: Number(body.slotStepMin) || 60,
       meetLink: String(body.meetLink || ""),
-      successText: String(body.successText || DEFAULT_SUCCESS),
       pendingHoldHours: Number(body.pendingHoldHours) || 12,
       horizonDays: Number(body.horizonDays) || 21,
       ...DEFAULT_COPY,
