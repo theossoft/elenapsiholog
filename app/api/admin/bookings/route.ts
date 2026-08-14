@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatSlot } from "@/lib/moscow";
-import { notifyTelegram } from "@/lib/telegram";
+import { BOOKING_STATUSES, setBookingStatus, type BookingStatus } from "@/lib/booking-status";
+import { bookingCard, confirmedKeyboard, notifyTelegram } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -24,50 +24,27 @@ export async function PATCH(request: Request) {
   const body = await request.json().catch(() => null);
   if (!body?.id) return NextResponse.json({ error: "Нет id" }, { status: 400 });
 
-  const status = String(body.status || "");
-  const allowed = ["pending", "confirmed", "cancelled", "completed"];
-  if (!allowed.includes(status)) {
+  const status = String(body.status || "") as BookingStatus;
+  if (!BOOKING_STATUSES.includes(status)) {
     return NextResponse.json({ error: "Неизвестный статус" }, { status: 400 });
   }
 
   const incomingLink = typeof body.meetLink === "string" ? body.meetLink.trim() : "";
-  const settings = await prisma.setting.findUnique({ where: { id: "default" } });
+  const result = await setBookingStatus(String(body.id), status, incomingLink);
+  if ("error" in result) {
+    return NextResponse.json({ error: "Заявка не найдена" }, { status: 404 });
+  }
 
-  const current = await prisma.booking.findUnique({ where: { id: String(body.id) } });
-  if (!current) return NextResponse.json({ error: "Заявка не найдена" }, { status: 404 });
-
-  const meetLink =
-    incomingLink || current.meetLink || settings?.meetLink || "";
-
-  const booking = await prisma.booking.update({
-    where: { id: current.id },
-    data: {
-      status,
-      meetLink,
-    },
-  });
+  const { booking } = result;
 
   if (status === "confirmed") {
-    await notifyTelegram(
-      [
-        "<b>Запись подтверждена</b>",
-        formatSlot(booking.slotStart),
-        `${booking.name}, ${booking.phone}`,
-        booking.meetLink ? `Ссылка: ${booking.meetLink}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    );
+    await notifyTelegram(bookingCard(booking, "Запись подтверждена"), {
+      replyMarkup: confirmedKeyboard(booking.id),
+    });
   }
 
   if (status === "cancelled") {
-    await notifyTelegram(
-      [
-        "<b>Запись отменена</b>",
-        formatSlot(booking.slotStart),
-        `${booking.name}, ${booking.phone}`,
-      ].join("\n"),
-    );
+    await notifyTelegram(bookingCard(booking, "Запись отменена"));
   }
 
   return NextResponse.json({ booking });

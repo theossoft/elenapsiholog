@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isSlotFree } from "@/lib/slots";
-import { addMinutes, formatSlot } from "@/lib/moscow";
-import { notifyTelegram } from "@/lib/telegram";
-import { FALLBACK_SUCCESS, SITE } from "@/lib/site";
+import { addMinutes } from "@/lib/moscow";
+import { notifyNewBooking } from "@/lib/telegram";
+import { landingCopyFrom } from "@/lib/copy";
 
 export const dynamic = "force-dynamic";
 
@@ -73,24 +73,12 @@ export async function POST(request: Request) {
       },
     });
 
-    await notifyTelegram(
-      [
-        "<b>Новая заявка на сессию</b>",
-        formatSlot(slotStart),
-        `Имя: ${name}`,
-        `Телефон: ${phone}`,
-        telegram ? `Telegram: ${telegram}` : "",
-        note ? `Запрос: ${note}` : "",
-        `${SITE.url}/admin`,
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    );
+    await notifyNewBooking(booking);
 
     return NextResponse.json({
       ok: true,
       id: booking.id,
-      message: settings?.successText || FALLBACK_SUCCESS,
+      message: landingCopyFrom(settings).successText,
     });
   } catch (error: unknown) {
     const code = typeof error === "object" && error && "code" in error ? error.code : "";

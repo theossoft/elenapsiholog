@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { addMinutes, formatSlot } from "@/lib/moscow";
-import { notifyTelegram } from "@/lib/telegram";
+import { addMinutes } from "@/lib/moscow";
+import { bookingCard, notifyTelegram } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -25,16 +25,7 @@ export async function GET(request: Request) {
   });
 
   for (const booking of bookings) {
-    await notifyTelegram(
-      [
-        "<b>Напоминание: сессия через час</b>",
-        formatSlot(booking.slotStart),
-        `${booking.name}, ${booking.phone}`,
-        booking.meetLink ? `Ссылка: ${booking.meetLink}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    );
+    await notifyTelegram(bookingCard(booking, "Напоминание: сессия через час"));
     await prisma.booking.update({
       where: { id: booking.id },
       data: { remindedAt: new Date() },
