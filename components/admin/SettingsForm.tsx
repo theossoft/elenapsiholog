@@ -1,13 +1,13 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 
 type Settings = {
   price: number;
   durationMin: number;
   slotStepMin: number;
   meetLink: string;
-  successText: string;
   pendingHoldHours: number;
   horizonDays: number;
 };
@@ -33,7 +33,6 @@ export function SettingsForm() {
         durationMin: settings.durationMin,
         slotStepMin: settings.slotStepMin,
         meetLink: settings.meetLink,
-        successText: settings.successText,
         pendingHoldHours: settings.pendingHoldHours,
         horizonDays: settings.horizonDays,
       }),
@@ -80,15 +79,13 @@ export function SettingsForm() {
           className="mt-1 w-full rounded-xl border border-line px-3 py-2"
         />
       </label>
-      <label className="block text-sm">
-        Текст после записи
-        <textarea
-          value={settings.successText}
-          onChange={(e) => setSettings({ ...settings, successText: e.target.value })}
-          rows={3}
-          className="mt-1 w-full rounded-xl border border-line px-3 py-2"
-        />
-      </label>
+      <p className="rounded-2xl border border-line bg-cream px-4 py-3 text-sm text-ink-soft">
+        Текст окна после записи (заголовок, абзац и кнопки MAX / Telegram) правится в разделе{" "}
+        <Link href="/admin/copy" className="underline">
+          Тексты
+        </Link>
+        .
+      </p>
       <label className="block text-sm">
         Сколько часов держать неподтверждённый слот
         <input

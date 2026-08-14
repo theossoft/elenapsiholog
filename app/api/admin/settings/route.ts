@@ -40,6 +40,9 @@ export async function PUT(request: Request) {
   for (const key of COPY_KEYS) {
     if (body[key] != null) data[key] = String(body[key]);
   }
+  if (typeof data.successText === "string") {
+    data.successText = data.successText.replaceAll("WhatsApp", "MAX");
+  }
 
   const copyFromBody = Object.fromEntries(
     COPY_KEYS.filter((key) => body[key] != null).map((key) => [key, String(body[key])]),

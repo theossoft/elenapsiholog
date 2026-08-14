@@ -22,6 +22,11 @@ export const DEFAULT_COPY = {
     "Оплата — переводом после того, как я подтвержу время. На сайте ничего списывать не нужно: сначала договариваемся, потом встречаемся.",
   bookingLead:
     "Слот бронируется после заявки. Я подтверждаю встречу в мессенджере и присылаю способ оплаты. Часовой пояс — Москва.",
+  successTitle: "Готово",
+  successText:
+    "Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.",
+  successMaxCta: "Написать в MAX",
+  successTelegramCta: "Написать в Telegram",
 };
 
 export type LandingCopy = typeof DEFAULT_COPY;
@@ -37,5 +42,6 @@ export function landingCopyFrom(
     const value = source[key];
     if (typeof value === "string" && value.trim()) copy[key] = value.trim();
   }
+  copy.successText = copy.successText.replaceAll("WhatsApp", "MAX");
   return copy;
 }

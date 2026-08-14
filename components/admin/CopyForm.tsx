@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { DEFAULT_COPY, type LandingCopy } from "@/lib/copy";
+import { landingCopyFrom, type LandingCopy } from "@/lib/copy";
 
 const GROUPS: { title: string; hint: string; fields: { key: keyof LandingCopy; label: string; rows: number }[] }[] = [
   {
@@ -49,6 +49,16 @@ const GROUPS: { title: string; hint: string; fields: { key: keyof LandingCopy; l
       { key: "bookingLead", label: "Текст над календарём записи", rows: 4 },
     ],
   },
+  {
+    title: "Окно после записи",
+    hint: "Карточка «Готово» вместо календаря, когда заявка принята. Кнопки ведут в MAX и Telegram — ссылки из настроек сайта.",
+    fields: [
+      { key: "successTitle", label: "Заголовок", rows: 1 },
+      { key: "successText", label: "Текст под заголовком", rows: 4 },
+      { key: "successMaxCta", label: "Кнопка MAX", rows: 1 },
+      { key: "successTelegramCta", label: "Кнопка Telegram", rows: 1 },
+    ],
+  },
 ];
 
 export function CopyForm() {
@@ -59,16 +69,7 @@ export function CopyForm() {
   useEffect(() => {
     fetch("/api/admin/settings", { cache: "no-store" })
       .then((r) => r.json())
-      .then((data) => {
-        const next = { ...DEFAULT_COPY };
-        const source = data.settings || {};
-        for (const key of Object.keys(DEFAULT_COPY) as (keyof LandingCopy)[]) {
-          if (typeof source[key] === "string" && source[key].trim()) {
-            next[key] = source[key];
-          }
-        }
-        setCopy(next);
-      });
+      .then((data) => setCopy(landingCopyFrom(data.settings)));
   }, []);
 
   async function onSubmit(e: FormEvent) {

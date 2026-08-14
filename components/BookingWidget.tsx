@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SITE } from "@/lib/site";
 import { trackGoal } from "@/lib/track";
+import type { LandingCopy } from "@/lib/copy";
 
 type Slot = { start: string; end: string };
 
@@ -33,7 +34,8 @@ function timeLabel(iso: string) {
   });
 }
 
-export function BookingWidget({ bookingLead }: { bookingLead: string }) {
+export function BookingWidget({ copy }: { copy: LandingCopy }) {
+  const { bookingLead, successTitle, successText, successMaxCta, successTelegramCta } = copy;
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [day, setDay] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function BookingWidget({ bookingLead }: { bookingLead: string }) {
   const [note, setNote] = useState("");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [done, setDone] = useState(false);
   const [sending, setSending] = useState(false);
 
   async function loadSlots() {
@@ -107,7 +109,7 @@ export function BookingWidget({ bookingLead }: { bookingLead: string }) {
         if (res.status === 409) await loadSlots();
         return;
       }
-      setSuccess(data.message);
+      setDone(true);
       trackGoal("booking_success");
       setSelected(null);
       setName("");
@@ -130,10 +132,10 @@ export function BookingWidget({ bookingLead }: { bookingLead: string }) {
         <h2 className="font-serif mt-3 text-3xl md:text-4xl">Выберите удобное время</h2>
         <p className="mt-3 max-w-xl text-cream/75">{bookingLead}</p>
 
-        {success ? (
+        {done ? (
           <div className="mt-8 max-w-xl rounded-2xl bg-cream p-6 text-ink">
-            <p className="font-serif text-2xl">Готово</p>
-            <p className="mt-2 text-ink-soft">{success}</p>
+            <p className="font-serif text-2xl">{successTitle}</p>
+            <p className="mt-2 text-ink-soft">{successText}</p>
             <div className="mt-5 flex flex-wrap gap-3">
               <a
                 href={SITE.max}
@@ -142,7 +144,7 @@ export function BookingWidget({ bookingLead }: { bookingLead: string }) {
                 data-goal="max_click"
                 className="inline-flex rounded-full bg-terracotta px-5 py-2.5 text-sm text-white"
               >
-                Написать в MAX
+                {successMaxCta}
               </a>
               <a
                 href={SITE.telegram}
@@ -151,7 +153,7 @@ export function BookingWidget({ bookingLead }: { bookingLead: string }) {
                 data-goal="telegram_click"
                 className="inline-flex rounded-full border border-sage px-5 py-2.5 text-sm text-sage-deep"
               >
-                Написать в Telegram
+                {successTelegramCta}
               </a>
             </div>
           </div>

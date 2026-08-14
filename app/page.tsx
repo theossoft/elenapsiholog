@@ -34,7 +34,7 @@ export default async function HomePage() {
         <About copy={copy} />
         <Pricing price={price} duration={duration} copy={copy} />
         <Faq />
-        <BookingWidget bookingLead={copy.bookingLead} />
+        <BookingWidget copy={copy} />
       </main>
       <Footer />
       <StickyCta />
