@@ -1,5 +1,5 @@
 import type { Booking } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { setBookingStatus } from "@/lib/booking-status";
@@ -32,12 +32,16 @@ export async function POST(request: Request) {
   const update = (await request.json().catch(() => null)) as TelegramUpdate | null;
   if (!update) return NextResponse.json({ ok: true });
 
-  try {
-    if (update.callback_query) await handleCallback(update.callback_query);
-    else if (update.message) await handleMessage(update.message);
-  } catch (error) {
-    console.error("[telegram webhook]", error);
-  }
+  // Telegram waits for this HTTP 200. If we call Telegram API before answering,
+  // the bot can stall for a minute and buttons look like they did nothing.
+  after(async () => {
+    try {
+      if (update.callback_query) await handleCallback(update.callback_query);
+      else if (update.message) await handleMessage(update.message);
+    } catch (error) {
+      console.error("[telegram webhook]", error);
+    }
+  });
 
   return NextResponse.json({ ok: true });
 }
