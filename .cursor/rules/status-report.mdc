@@ -1,0 +1,19 @@
+---
+description: Always report what was done and whether commit, push, and deploy happened
+alwaysApply: true
+---
+
+# Status report after every task
+
+End every completed task with four explicit lines (or a short equivalent):
+
+- **Сделано** — what changed, in plain language. If nothing changed, say so.
+- **Коммит** — yes or no. If yes: hash and message. If no: why.
+- **Пуш** — yes or no. If yes: remote and branch. If no: why.
+- **Деплой** — yes or no. If yes: that production was updated. If no: why.
+
+Never write as if the live site already has the change when files are only local.
+
+For this project, after a finished change that should go live: commit, push `origin/main`, then deploy with `scripts/deploy_prod.py`, unless the user said not to. Skip secrets, `.env`, and one-off `scripts/` debug/fix helpers unless asked.
+
+Do not claim commit, push, or deploy succeeded without actually running them.

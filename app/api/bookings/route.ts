@@ -4,16 +4,9 @@ import { isSlotFree } from "@/lib/slots";
 import { addMinutes } from "@/lib/moscow";
 import { notifyNewBooking } from "@/lib/telegram";
 import { landingCopyFrom } from "@/lib/copy";
+import { normalizePhone, validateBookingFields } from "@/lib/booking-form";
 
 export const dynamic = "force-dynamic";
-
-function normalizePhone(raw: string) {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.length === 11 && digits.startsWith("8")) return `+7${digits.slice(1)}`;
-  if (digits.length === 11 && digits.startsWith("7")) return `+${digits}`;
-  if (digits.length === 10) return `+7${digits}`;
-  return raw.trim();
-}
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -29,23 +22,21 @@ export async function POST(request: Request) {
   const slotStartRaw = String(body.slotStart || "");
   const consent = Boolean(body.consent);
 
-  if (!name || name.length < 2) {
-    return NextResponse.json({ error: "Укажите имя" }, { status: 400 });
-  }
-  if (!phone || phone.replace(/\D/g, "").length < 10) {
-    return NextResponse.json({ error: "Укажите телефон" }, { status: 400 });
-  }
-  if (!consent) {
+  const fieldErrors = validateBookingFields({
+    name,
+    phone: String(body.phone || ""),
+    consent,
+    slotStart: slotStartRaw,
+  });
+  const firstField = (["name", "phone", "consent", "slot"] as const).find((field) => fieldErrors[field]);
+  if (firstField) {
     return NextResponse.json(
-      { error: "Нужно согласие на обработку персональных данных" },
+      { error: fieldErrors[firstField], field: firstField },
       { status: 400 },
     );
   }
 
   const slotStart = new Date(slotStartRaw);
-  if (Number.isNaN(slotStart.getTime())) {
-    return NextResponse.json({ error: "Выберите время" }, { status: 400 });
-  }
 
   const settings = await prisma.setting.findUnique({ where: { id: "default" } });
   const duration = settings?.durationMin ?? 55;

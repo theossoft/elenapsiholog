@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SITE } from "@/lib/site";
 import { trackGoal } from "@/lib/track";
 import type { LandingCopy } from "@/lib/copy";
+import { validateBookingFields, type BookingField } from "@/lib/booking-form";
 
 type Slot = { start: string; end: string };
 
@@ -46,8 +47,24 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
   const [note, setNote] = useState("");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<BookingField, string>>>({});
   const [done, setDone] = useState(false);
   const [sending, setSending] = useState(false);
+
+  function clearFieldError(field: BookingField) {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function fieldClass(hasError: boolean) {
+    return hasError
+      ? "mt-1 w-full rounded-xl border border-terracotta bg-terracotta/5 px-3 py-2 outline-none ring-2 ring-terracotta/40"
+      : "mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 outline-none ring-sage/40 focus:ring-2";
+  }
 
   async function loadSlots() {
     setLoading(true);
@@ -85,8 +102,17 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
-    if (!selected) {
-      setError("Выберите время.");
+    const nextErrors = validateBookingFields({
+      name,
+      phone,
+      consent,
+      slotStart: selected,
+    });
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      if (nextErrors.slot && !nextErrors.name && !nextErrors.phone && !nextErrors.consent) {
+        setError(nextErrors.slot);
+      }
       return;
     }
     setSending(true);
@@ -105,6 +131,8 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
       });
       const data = await res.json();
       if (!res.ok) {
+        const field = data.field as BookingField | undefined;
+        if (field) setFieldErrors({ [field]: data.error });
         setError(data.error || "Не получилось записаться.");
         if (res.status === 409) await loadSlots();
         return;
@@ -117,6 +145,7 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
       setTelegram("");
       setNote("");
       setConsent(false);
+      setFieldErrors({});
       await loadSlots();
     } catch {
       setError("Сеть недоступна. Попробуйте ещё раз или напишите в MAX или Telegram.");
@@ -208,12 +237,19 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
                       </button>
                     ))}
                   </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
+                  <div
+                    className={`mt-5 flex flex-wrap gap-2 rounded-2xl ${
+                      fieldErrors.slot ? "ring-2 ring-terracotta/50 ring-offset-2 ring-offset-ink p-2" : ""
+                    }`}
+                  >
                     {times.map((slot) => (
                       <button
                         key={slot.start}
                         type="button"
-                        onClick={() => setSelected(slot.start)}
+                        onClick={() => {
+                          setSelected(slot.start);
+                          clearFieldError("slot");
+                        }}
                         className={`rounded-full px-4 py-2 text-sm transition-colors ${
                           selected === slot.start
                             ? "bg-terracotta text-white"
@@ -229,34 +265,55 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
             </div>
 
             <form
+              noValidate
               onSubmit={onSubmit}
               className="min-w-0 w-full max-w-full rounded-3xl bg-cream p-6 text-ink md:p-8"
             >
               <p className="font-serif text-2xl">Заявка</p>
-              <p className="mt-1 text-sm text-ink-soft">
+              <p className={`mt-1 text-sm ${fieldErrors.slot ? "text-terracotta-deep" : "text-ink-soft"}`}>
                 {selected
                   ? `Время: ${dayLabel(selected)}, ${timeLabel(selected)}`
-                  : "Сначала выберите слот слева"}
+                  : fieldErrors.slot || "Сначала выберите слот слева"}
               </p>
               <label className="mt-5 block text-sm">
                 Имя
                 <input
-                  required
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 outline-none ring-sage/40 focus:ring-2"
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    clearFieldError("name");
+                  }}
+                  aria-invalid={Boolean(fieldErrors.name)}
+                  aria-describedby={fieldErrors.name ? "booking-name-error" : undefined}
+                  className={fieldClass(Boolean(fieldErrors.name))}
                 />
+                {fieldErrors.name ? (
+                  <p id="booking-name-error" className="mt-1 text-sm text-terracotta-deep">
+                    {fieldErrors.name}
+                  </p>
+                ) : null}
               </label>
               <label className="mt-4 block text-sm">
                 Телефон
                 <input
-                  required
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    clearFieldError("phone");
+                  }}
                   placeholder="+7"
-                  className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 outline-none ring-sage/40 focus:ring-2"
+                  aria-invalid={Boolean(fieldErrors.phone)}
+                  aria-describedby={fieldErrors.phone ? "booking-phone-error" : undefined}
+                  className={fieldClass(Boolean(fieldErrors.phone))}
                 />
+                {fieldErrors.phone ? (
+                  <p id="booking-phone-error" className="mt-1 text-sm text-terracotta-deep">
+                    {fieldErrors.phone}
+                  </p>
+                ) : null}
               </label>
               <label className="mt-4 block text-sm">
                 Telegram <span className="text-ink-soft">(по желанию)</span>
@@ -275,11 +332,22 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
                   className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 outline-none ring-sage/40 focus:ring-2"
                 />
               </label>
-              <label className="mt-4 flex items-start gap-2 text-sm text-ink-soft">
+              <label
+                className={`mt-4 flex items-start gap-2 rounded-xl text-sm ${
+                  fieldErrors.consent
+                    ? "border border-terracotta bg-terracotta/5 p-3 text-terracotta-deep"
+                    : "text-ink-soft"
+                }`}
+              >
                 <input
                   type="checkbox"
                   checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
+                  onChange={(e) => {
+                    setConsent(e.target.checked);
+                    clearFieldError("consent");
+                  }}
+                  aria-invalid={Boolean(fieldErrors.consent)}
+                  aria-describedby={fieldErrors.consent ? "booking-consent-error" : undefined}
                   className="mt-1"
                 />
                 <span>
@@ -288,12 +356,19 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
                     политике
                   </Link>
                   .
+                  {fieldErrors.consent ? (
+                    <span id="booking-consent-error" className="mt-1 block">
+                      {fieldErrors.consent}
+                    </span>
+                  ) : null}
                 </span>
               </label>
-              {error ? <p className="mt-3 text-sm text-terracotta-deep">{error}</p> : null}
+              {error && !fieldErrors.name && !fieldErrors.phone && !fieldErrors.consent ? (
+                <p className="mt-3 text-sm text-terracotta-deep">{error}</p>
+              ) : null}
               <button
                 type="submit"
-                disabled={sending || !selected}
+                disabled={sending}
                 className="mt-5 w-full rounded-full bg-terracotta py-3 text-sm font-medium text-white transition-colors hover:bg-terracotta-deep disabled:opacity-50"
               >
                 {sending ? "Отправляю…" : "Оставить заявку"}
