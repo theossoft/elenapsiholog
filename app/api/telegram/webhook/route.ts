@@ -58,15 +58,21 @@ async function handleMessage(message: NonNullable<TelegramUpdate["message"]>) {
     return;
   }
 
-  const command = text.split(/\s+/)[0]?.split("@")[0]?.toLowerCase() || "";
-  const label = text.toLowerCase();
+  const command = (text.split(/\s+/)[0] || "").replace(/^\\/, "/").split("@")[0].toLowerCase();
+  const label = text.replace(/^[\\/]+/, "").split("@")[0].toLowerCase();
 
-  if (command === "/pending" || label === "ожидают") {
+  if (command === "/pending" || label === "pending" || label === "ожидают") {
     await sendPendingList(message.chat.id);
     return;
   }
 
-  if (command === "/calendar" || command === "/schedule" || label === "календарь") {
+  if (
+    command === "/calendar" ||
+    command === "/schedule" ||
+    label === "calendar" ||
+    label === "schedule" ||
+    label === "календарь"
+  ) {
     await sendCalendar(message.chat.id);
     return;
   }

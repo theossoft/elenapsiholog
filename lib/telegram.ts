@@ -320,20 +320,11 @@ export async function setTelegramWebhook(url: string, dropPending = false) {
     ...(ip ? { ip_address: ip } : {}),
   });
   await telegramCall("setMyCommands", {
-    commands: [{ command: "start", description: "О боте" }],
+    commands: [
+      { command: "start", description: "О боте" },
+      { command: "calendar", description: "Календарь встреч" },
+      { command: "pending", description: "Заявки в ожидании" },
+    ],
   });
-  const adminCommands = [
-    { command: "start", description: "О боте" },
-    { command: "calendar", description: "Календарь встреч" },
-    { command: "pending", description: "Заявки в ожидании" },
-  ];
-  await Promise.all(
-    adminChatIds().map((chat_id) =>
-      telegramCall("setMyCommands", {
-        commands: adminCommands,
-        scope: { type: "chat", chat_id: Number(chat_id) || chat_id },
-      }),
-    ),
-  );
   return webhook;
 }
