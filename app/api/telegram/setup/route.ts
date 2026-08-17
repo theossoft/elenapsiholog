@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { SITE } from "@/lib/site";
-import { setTelegramWebhook, telegramWebhookSecret } from "@/lib/telegram";
+import { setTelegramWebhook, telegramWebhookSecret, telegramWebhookUrl } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +21,8 @@ export async function GET(request: Request) {
     );
   }
 
-  const webhookUrl = `${SITE.url.replace(/\/$/, "")}/api/telegram/webhook`;
-  const result = await setTelegramWebhook(webhookUrl);
+  const webhookUrl = telegramWebhookUrl();
+  const result = await setTelegramWebhook(webhookUrl, true);
   if (!result) {
     return NextResponse.json({ error: "Telegram не принял webhook" }, { status: 502 });
   }

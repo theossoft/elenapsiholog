@@ -20,6 +20,7 @@ npm run dev
 
 - `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID` — уведомления о заявках. Несколько получателей: chat_id через запятую, например `111,222`
 - `TELEGRAM_WEBHOOK_SECRET` — секрет webhook (латиница, цифры, `_` и `-`). Если пусто, используется очищенный `NEXTAUTH_SECRET`
+- `TELEGRAM_WEBHOOK_IP` — IPv4 сервера для webhook (чтобы Telegram не ходил на кириллический домен)
 - `NEXT_PUBLIC_METRIKA_ID` — Яндекс.Метрика (грузится после согласия)
 - `NEXTAUTH_SECRET` — длинная случайная строка на проде
 - `NEXTAUTH_URL` — публичный URL сайта

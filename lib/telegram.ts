@@ -53,6 +53,11 @@ export function isAdminChat(chatId?: string | number, userId?: string | number) 
   );
 }
 
+export function telegramWebhookUrl() {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || SITE.url;
+  return new URL("/api/telegram/webhook", `${base.replace(/\/$/, "")}/`).href;
+}
+
 export function telegramWebhookSecret() {
   const explicit = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
   if (explicit) return explicit;
@@ -190,13 +195,15 @@ export async function sendTelegramMessage(
   });
 }
 
-export async function setTelegramWebhook(url: string) {
+export async function setTelegramWebhook(url: string, dropPending = false) {
   const secret = telegramWebhookSecret();
+  const ip = process.env.TELEGRAM_WEBHOOK_IP?.trim();
   const webhook = await telegramCall("setWebhook", {
     url,
     secret_token: secret,
     allowed_updates: ["message", "callback_query"],
-    drop_pending_updates: true,
+    drop_pending_updates: dropPending,
+    ...(ip ? { ip_address: ip } : {}),
   });
   await telegramCall("setMyCommands", {
     commands: [
