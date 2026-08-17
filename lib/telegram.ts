@@ -64,6 +64,12 @@ export function telegramWebhookSecret() {
   return (process.env.NEXTAUTH_SECRET || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 128);
 }
 
+export function processingKeyboard(): InlineKeyboard {
+  return {
+    inline_keyboard: [[{ text: "Обрабатываю…", callback_data: "wait" }]],
+  };
+}
+
 export function pendingKeyboard(id: string): InlineKeyboard {
   return {
     inline_keyboard: [
@@ -116,7 +122,11 @@ export function adminHelpText() {
   ].join("\n");
 }
 
-async function telegramCall(method: string, body: Record<string, unknown>) {
+async function telegramCall(
+  method: string,
+  body: Record<string, unknown>,
+  timeoutMs = 20000,
+) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return null;
 
@@ -124,9 +134,10 @@ async function telegramCall(method: string, body: Record<string, unknown>) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
-  const payload = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+  const payload = (await res.json().catch(() => null)) as { ok?: boolean; result?: unknown } | null;
   if (!res.ok || !payload?.ok) {
     console.error("[telegram]", method, payload);
     return null;
@@ -193,6 +204,36 @@ export async function sendTelegramMessage(
     parse_mode: "HTML",
     ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
   });
+}
+
+export async function deleteTelegramWebhook() {
+  const deleted = await telegramCall("deleteWebhook", { drop_pending_updates: false });
+  await telegramCall("setMyCommands", {
+    commands: [
+      { command: "start", description: "О боте" },
+      { command: "pending", description: "Заявки в ожидании" },
+    ],
+  });
+  return deleted;
+}
+
+export async function getTelegramUpdates(offset: number) {
+  try {
+    const payload = await telegramCall(
+      "getUpdates",
+      {
+        offset,
+        timeout: 25,
+        allowed_updates: ["message", "callback_query"],
+      },
+      35000,
+    );
+    if (!payload) return null;
+    return (payload.result as (TelegramUpdate & { update_id: number })[]) || [];
+  } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") return [];
+    throw error;
+  }
 }
 
 export async function setTelegramWebhook(url: string, dropPending = false) {

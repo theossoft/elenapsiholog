@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { setTelegramWebhook, telegramWebhookSecret, telegramWebhookUrl } from "@/lib/telegram";
+import { startTelegramPolling } from "@/lib/telegram-poll";
 
 export const dynamic = "force-dynamic";
 
@@ -13,19 +13,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Не задан TELEGRAM_BOT_TOKEN" }, { status: 400 });
   }
 
-  const secret = telegramWebhookSecret();
-  if (!secret) {
-    return NextResponse.json(
-      { error: "Задайте TELEGRAM_WEBHOOK_SECRET или NEXTAUTH_SECRET" },
-      { status: 400 },
-    );
-  }
-
-  const webhookUrl = telegramWebhookUrl();
-  const result = await setTelegramWebhook(webhookUrl, true);
-  if (!result) {
-    return NextResponse.json({ error: "Telegram не принял webhook" }, { status: 502 });
-  }
-
-  return NextResponse.json({ ok: true, url: webhookUrl, result });
+  await startTelegramPolling();
+  return NextResponse.json({ ok: true, mode: "polling" });
 }
