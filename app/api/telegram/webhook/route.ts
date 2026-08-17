@@ -6,6 +6,7 @@ import { setBookingStatus } from "@/lib/booking-status";
 import {
   adminChatIds,
   adminHelpText,
+  adminReplyKeyboard,
   answerCallback,
   bookingCard,
   confirmedKeyboard,
@@ -15,7 +16,9 @@ import {
   notifyTelegram,
   pendingKeyboard,
   sendTelegramMessage,
+  splitTelegramText,
   telegramWebhookSecret,
+  upcomingCalendarText,
   type InlineKeyboard,
   type TelegramUpdate,
 } from "@/lib/telegram";
@@ -55,14 +58,38 @@ async function handleMessage(message: NonNullable<TelegramUpdate["message"]>) {
     return;
   }
 
-  const command = text.split(/\s+/)[0]?.split("@")[0] || "";
-  if (command === "/pending") {
+  const command = text.split(/\s+/)[0]?.split("@")[0]?.toLowerCase() || "";
+  const label = text.toLowerCase();
+
+  if (command === "/pending" || label === "ожидают") {
     await sendPendingList(message.chat.id);
     return;
   }
 
+  if (command === "/calendar" || command === "/schedule" || label === "календарь") {
+    await sendCalendar(message.chat.id);
+    return;
+  }
+
   if (command === "/start" || command === "/help" || command.startsWith("/")) {
-    await sendTelegramMessage(message.chat.id, adminHelpText());
+    await sendTelegramMessage(message.chat.id, adminHelpText(), adminReplyKeyboard());
+  }
+}
+
+async function sendCalendar(chatId: number) {
+  const bookings = await prisma.booking.findMany({
+    where: {
+      status: { in: ["pending", "confirmed"] },
+      slotEnd: { gte: new Date() },
+    },
+    orderBy: { slotStart: "asc" },
+    take: 50,
+  });
+
+  const messages = splitTelegramText(upcomingCalendarText(bookings));
+  for (const [index, text] of messages.entries()) {
+    const keyboard = index === messages.length - 1 ? adminReplyKeyboard() : undefined;
+    await sendTelegramMessage(chatId, text, keyboard);
   }
 }
 
@@ -74,7 +101,7 @@ async function sendPendingList(chatId: number) {
   });
 
   if (!pending.length) {
-    await sendTelegramMessage(chatId, "Нет заявок в ожидании.");
+    await sendTelegramMessage(chatId, "Нет заявок в ожидании.", adminReplyKeyboard());
     return;
   }
 

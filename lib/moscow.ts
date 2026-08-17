@@ -59,6 +59,31 @@ export function formatDayLabel(date: Date) {
   });
 }
 
+export function formatCalendarHeading(date: Date) {
+  const text = date.toLocaleDateString("ru-RU", {
+    timeZone: "Europe/Moscow",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function formatMonthTitle(date: Date) {
+  return date.toLocaleDateString("ru-RU", {
+    timeZone: "Europe/Moscow",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export function daysInMoscowMonth(year: number, month: number) {
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  const last = addMinutes(moscowToUtc(`${nextYear}-${pad(nextMonth)}-01`, "12:00"), -24 * 60);
+  return moscowParts(last).day;
+}
+
 export function todayMoscow() {
   return moscowDateString(new Date());
 }

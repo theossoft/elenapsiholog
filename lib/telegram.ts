@@ -1,10 +1,29 @@
 import type { Booking } from "@prisma/client";
-import { formatSlot } from "./moscow";
+import {
+  daysInMoscowMonth,
+  formatCalendarHeading,
+  formatMonthTitle,
+  formatSlot,
+  formatTime,
+  moscowDateString,
+  moscowParts,
+  moscowToUtc,
+  pad,
+  weekdayOfDate,
+} from "./moscow";
 import { SITE } from "./site";
 
 export type InlineKeyboard = {
   inline_keyboard: { text: string; callback_data?: string; url?: string }[][];
 };
+
+export type ReplyKeyboard = {
+  keyboard: { text: string }[][];
+  resize_keyboard?: boolean;
+  is_persistent?: boolean;
+};
+
+export type TelegramMarkup = InlineKeyboard | ReplyKeyboard;
 
 type NotifyOptions = {
   replyMarkup?: InlineKeyboard;
@@ -112,8 +131,103 @@ export function adminHelpText() {
     `Расписание и тексты сайта — в админке: ${SITE.url}/admin`,
     "",
     "Команды:",
+    "/calendar — календарь предстоящих встреч",
     "/pending — заявки, которые ждут ответа",
   ].join("\n");
+}
+
+export function adminReplyKeyboard(): ReplyKeyboard {
+  return {
+    keyboard: [[{ text: "Календарь" }, { text: "Ожидают" }]],
+    resize_keyboard: true,
+    is_persistent: true,
+  };
+}
+
+const CALENDAR_STATUS: Record<string, string> = {
+  pending: "Ожидает",
+  confirmed: "Подтверждена",
+};
+
+function monthGrid(year: number, month: number, busy: Set<string>) {
+  const title = formatMonthTitle(moscowToUtc(`${year}-${pad(month)}-01`, "12:00"));
+  const weekday = weekdayOfDate(`${year}-${pad(month)}-01`);
+  const lastDay = daysInMoscowMonth(year, month);
+  const header = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"].map((name) => name.padEnd(4, " ")).join("");
+  const cells: string[] = [];
+  for (let i = 1; i < weekday; i += 1) cells.push("    ");
+  for (let day = 1; day <= lastDay; day += 1) {
+    const key = `${year}-${pad(month)}-${pad(day)}`;
+    const num = String(day).padStart(2, " ");
+    cells.push(busy.has(key) ? `${num}* ` : `${num}  `);
+  }
+  const rows: string[] = [];
+  for (let i = 0; i < cells.length; i += 7) {
+    rows.push(cells.slice(i, i + 7).join(""));
+  }
+  return [`    ${title}`, header, ...rows].join("\n");
+}
+
+function calendarMonths(now: Date) {
+  const parts = moscowParts(now);
+  return [0, 1].map((offset) => {
+    let month = parts.month + offset;
+    let year = parts.year;
+    if (month > 12) {
+      month -= 12;
+      year += 1;
+    }
+    return { year, month };
+  });
+}
+
+export function upcomingCalendarText(bookings: Booking[], now = new Date()) {
+  if (!bookings.length) {
+    return "Ближайших встреч нет.";
+  }
+
+  const busy = new Set(bookings.map((booking) => moscowDateString(booking.slotStart)));
+  const grids = calendarMonths(now)
+    .map(({ year, month }) => monthGrid(year, month, busy))
+    .join("\n\n");
+
+  const groups = new Map<string, Booking[]>();
+  for (const booking of bookings) {
+    const key = moscowDateString(booking.slotStart);
+    const list = groups.get(key) || [];
+    list.push(booking);
+    groups.set(key, list);
+  }
+
+  const days = [...groups.values()].map((dayBookings) => {
+    const heading = formatCalendarHeading(dayBookings[0].slotStart);
+    const lines = dayBookings.map((booking) => {
+      const status = CALENDAR_STATUS[booking.status] || booking.status;
+      const telegram = booking.telegram ? `, ${escapeHtml(booking.telegram)}` : "";
+      return `${formatTime(booking.slotStart)} — ${escapeHtml(booking.name)}${telegram} · ${status}`;
+    });
+    return `<b>${escapeHtml(heading)}</b>\n${lines.join("\n")}`;
+  });
+
+  return [`<b>Календарь встреч</b>`, `<pre>${grids}\n\n* есть встреча</pre>`, ...days].join("\n\n");
+}
+
+export function splitTelegramText(text: string, limit = 3900) {
+  if (text.length <= limit) return [text];
+
+  const parts: string[] = [];
+  let current = "";
+  for (const chunk of text.split("\n\n")) {
+    const next = current ? `${current}\n\n${chunk}` : chunk;
+    if (next.length > limit && current) {
+      parts.push(current);
+      current = chunk;
+    } else {
+      current = next;
+    }
+  }
+  if (current) parts.push(current);
+  return parts;
 }
 
 async function telegramCall(method: string, body: Record<string, unknown>) {
@@ -185,7 +299,7 @@ export async function answerCallback(callbackQueryId: string, text: string) {
 export async function sendTelegramMessage(
   chatId: number | string,
   text: string,
-  replyMarkup?: InlineKeyboard,
+  replyMarkup?: TelegramMarkup,
 ) {
   await telegramCall("sendMessage", {
     chat_id: chatId,
@@ -206,10 +320,20 @@ export async function setTelegramWebhook(url: string, dropPending = false) {
     ...(ip ? { ip_address: ip } : {}),
   });
   await telegramCall("setMyCommands", {
-    commands: [
-      { command: "start", description: "О боте" },
-      { command: "pending", description: "Заявки в ожидании" },
-    ],
+    commands: [{ command: "start", description: "О боте" }],
   });
+  const adminCommands = [
+    { command: "start", description: "О боте" },
+    { command: "calendar", description: "Календарь встреч" },
+    { command: "pending", description: "Заявки в ожидании" },
+  ];
+  await Promise.all(
+    adminChatIds().map((chat_id) =>
+      telegramCall("setMyCommands", {
+        commands: adminCommands,
+        scope: { type: "chat", chat_id: Number(chat_id) || chat_id },
+      }),
+    ),
+  );
   return webhook;
 }
