@@ -242,8 +242,11 @@ export function splitTelegramText(text: string, limit = 3900) {
 }
 
 function nodeHttps() {
-  const load = new Function("return require")() as NodeRequire;
-  return load("https") as typeof import("https");
+  const getBuiltin = (process as NodeJS.Process & {
+    getBuiltinModule?: (name: string) => typeof import("https");
+  }).getBuiltinModule;
+  if (!getBuiltin) throw new Error("https builtin is unavailable");
+  return getBuiltin("https");
 }
 
 function postTelegram(path: string, payload: string, family: 4 | 6) {
