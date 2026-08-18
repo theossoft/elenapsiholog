@@ -111,8 +111,8 @@ export function BookingWidget({
 
   function fieldClass(hasError: boolean) {
     return hasError
-      ? "mt-1 w-full rounded-xl border border-terracotta bg-terracotta/5 px-3 py-2.5 outline-none ring-2 ring-terracotta/40"
-      : "mt-1 w-full rounded-xl border border-line bg-white px-3 py-2.5 outline-none ring-sage/40 focus:ring-2";
+      ? "mt-1.5 w-full rounded-xl border border-terracotta bg-terracotta/5 px-4 py-3 outline-none ring-2 ring-terracotta/40"
+      : "mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-sage/40 focus:ring-2";
   }
 
   async function loadSlots() {
@@ -341,143 +341,151 @@ export function BookingWidget({
           </div>
         ) : (
           <div className="mt-10 overflow-hidden rounded-3xl bg-cream text-ink shadow-[0_12px_40px_rgba(44,36,28,0.06)]">
-            <div className="border-b border-line px-5 py-4 md:px-8 lg:hidden">
-              <p className="rounded-2xl bg-cream-deep px-4 py-3 text-sm leading-relaxed text-ink">
+            <div className="border-b border-line px-6 py-5 md:px-10 lg:hidden">
+              <p className="rounded-2xl bg-cream-deep px-4 py-3.5 text-sm leading-relaxed text-ink">
                 Выберите дату и время в календаре ниже — слоты указаны по московскому времени.
               </p>
             </div>
 
-            <div className="grid min-w-0 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-              <div className="min-w-0 p-5 md:p-8">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage text-sm font-medium text-cream">
-                    1
-                  </span>
-                  <p className="text-sm tracking-[0.16em] text-sage-deep uppercase">Дата и время</p>
-                </div>
+            <div className="grid min-w-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.9fr)] lg:items-stretch">
+              <div className="flex min-w-0 flex-col gap-8 p-6 md:gap-10 md:p-8 lg:p-10">
+                <div className="flex flex-1 flex-col gap-8 md:gap-10">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sage text-xs font-medium text-cream">
+                      1
+                    </span>
+                    <p className="text-xs tracking-[0.18em] text-sage-deep uppercase">Дата и время</p>
+                  </div>
 
-                <div className="mt-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="font-serif text-xl capitalize">{monthTitle(view)}</p>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        disabled={!canPrev}
-                        onClick={() => setView((prev) => shiftMoscowMonth(prev.year, prev.month, -1))}
-                        aria-label="Предыдущий месяц"
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:bg-cream-deep disabled:cursor-not-allowed disabled:opacity-30"
-                      >
-                        <Chevron dir="prev" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!canNext}
-                        onClick={() => setView((prev) => shiftMoscowMonth(prev.year, prev.month, 1))}
-                        aria-label="Следующий месяц"
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:bg-cream-deep disabled:cursor-not-allowed disabled:opacity-30"
-                      >
-                        <Chevron dir="next" />
-                      </button>
+                  <div className="w-full">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-serif text-lg capitalize md:text-xl">{monthTitle(view)}</p>
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          disabled={!canPrev}
+                          onClick={() => setView((prev) => shiftMoscowMonth(prev.year, prev.month, -1))}
+                          aria-label="Предыдущий месяц"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink transition-colors hover:bg-cream-deep disabled:cursor-not-allowed disabled:opacity-30"
+                        >
+                          <Chevron dir="prev" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!canNext}
+                          onClick={() => setView((prev) => shiftMoscowMonth(prev.year, prev.month, 1))}
+                          aria-label="Следующий месяц"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink transition-colors hover:bg-cream-deep disabled:cursor-not-allowed disabled:opacity-30"
+                        >
+                          <Chevron dir="next" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[11px] tracking-[0.12em] text-ink-soft uppercase">
-                    {WEEKDAYS.map((label) => (
-                      <span key={label} className="py-1">
-                        {label}
-                      </span>
-                    ))}
-                  </div>
-                  <div
-                    className={`grid grid-cols-7 gap-1 ${fieldErrors.slot ? "rounded-2xl ring-2 ring-terracotta/50 ring-offset-2" : ""}`}
-                    role="grid"
-                    aria-label="Календарь свободных дат"
-                  >
-                    {monthCells.map((date, index) => {
-                      if (!date) return <span key={`empty-${index}`} />;
-                      const available = availableDates.has(date);
-                      const isSelected = day === date;
-                      const dayNum = parseMoscowDate(date).day;
-                      return (
-                        <button
-                          key={date}
-                          type="button"
-                          disabled={!available}
-                          onClick={() => selectDay(date)}
-                          aria-pressed={isSelected}
-                          aria-label={`${date}${available ? ", есть слоты" : ", нет слотов"}`}
-                          className={`flex aspect-square min-h-10 items-center justify-center rounded-xl text-sm transition-colors ${
-                            isSelected
-                              ? "bg-sage font-medium text-cream"
-                              : available
-                                ? "border border-sage/70 text-ink hover:bg-sage/10"
-                                : "cursor-default text-ink/30"
-                          }`}
-                        >
-                          {dayNum}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <p className="text-[11px] tracking-[0.14em] text-ink-soft uppercase">Часовой пояс</p>
-                  <div
-                    className="mt-1 flex items-center justify-between rounded-xl border border-line bg-white px-3 py-2.5 text-sm"
-                    aria-label="Часовой пояс слотов: Москва, GMT+3"
-                  >
-                    <span>Москва (GMT+3)</span>
-                    <span className="text-ink-soft">фиксированный</span>
-                  </div>
-                </div>
-
-                {day ? (
-                  <div className="mt-6">
-                    <p className="text-[11px] tracking-[0.14em] text-ink-soft uppercase">
-                      {formatTimesHeading(day)}
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {times.map((slot) => (
-                        <button
-                          key={slot.start}
-                          type="button"
-                          onClick={() => selectSlot(slot.start)}
-                          className={`rounded-full px-4 py-2 text-sm transition-colors ${
-                            selected === slot.start
-                              ? "bg-sage text-cream"
-                              : "border border-line bg-white hover:border-sage hover:bg-sage/10"
-                          }`}
-                        >
-                          {formatTime(new Date(slot.start))}
-                        </button>
+                    <div className="mt-5 grid grid-cols-7 text-center text-[11px] tracking-[0.14em] text-ink-soft uppercase">
+                      {WEEKDAYS.map((label) => (
+                        <span key={label} className="py-1">
+                          {label}
+                        </span>
                       ))}
                     </div>
+                    <div
+                      className={`grid grid-cols-7 gap-y-1.5 ${fieldErrors.slot ? "rounded-2xl ring-2 ring-terracotta/50 ring-offset-2" : ""}`}
+                      role="grid"
+                      aria-label="Календарь свободных дат"
+                    >
+                      {monthCells.map((date, index) => {
+                        if (!date) return <span key={`empty-${index}`} className="flex justify-center py-0.5" />;
+                        const available = availableDates.has(date);
+                        const isSelected = day === date;
+                        const dayNum = parseMoscowDate(date).day;
+                        return (
+                          <div key={date} className="flex justify-center py-0.5">
+                            <button
+                              type="button"
+                              disabled={!available}
+                              onClick={() => selectDay(date)}
+                              aria-pressed={isSelected}
+                              aria-label={`${date}${available ? ", есть слоты" : ", нет слотов"}`}
+                              className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm transition-colors md:h-11 md:w-11 ${
+                                isSelected
+                                  ? "bg-sage font-medium text-cream"
+                                  : available
+                                    ? "border border-sage/70 text-ink hover:bg-sage/10"
+                                    : "cursor-default text-ink/35"
+                              }`}
+                            >
+                              {dayNum}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                ) : null}
+
+                  <div>
+                    <p className="text-[11px] tracking-[0.16em] text-ink-soft uppercase">Часовой пояс</p>
+                    <div
+                      className="mt-2 flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3 text-sm"
+                      aria-label="Часовой пояс слотов: Москва, GMT+3"
+                    >
+                      <span>Москва (GMT+3)</span>
+                      <span className="text-ink-soft">фиксированный</span>
+                    </div>
+                    <p className="mt-2 text-xs leading-relaxed text-ink-soft">
+                      Слоты показаны по московскому времени.
+                    </p>
+                  </div>
+
+                  <div className="min-h-[5.5rem]">
+                    <p className="text-[11px] tracking-[0.16em] text-ink-soft uppercase">
+                      {day ? formatTimesHeading(day) : "Свободное время"}
+                    </p>
+                    {day ? (
+                      <div className="mt-3 flex flex-wrap gap-2.5">
+                        {times.map((slot) => (
+                          <button
+                            key={slot.start}
+                            type="button"
+                            onClick={() => selectSlot(slot.start)}
+                            className={`min-w-[4.75rem] rounded-full px-5 py-2.5 text-sm transition-colors ${
+                              selected === slot.start
+                                ? "bg-sage text-cream"
+                                : "border border-sage/50 bg-white text-ink hover:border-sage hover:bg-sage/10"
+                            }`}
+                          >
+                            {formatTime(new Date(slot.start))}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-sm text-ink-soft">Сначала выберите дату в календаре.</p>
+                    )}
+                  </div>
+                </div>
 
                 <button
                   type="button"
                   disabled={!selected}
                   onClick={scrollToDetails}
-                  className="mt-6 w-full rounded-full bg-cream-deep py-3 text-sm font-medium text-ink-soft transition-colors enabled:bg-sage enabled:text-cream enabled:hover:bg-sage-deep lg:hidden"
+                  className="w-full rounded-full bg-cream-deep py-3.5 text-sm font-medium text-ink-soft transition-colors enabled:bg-sage enabled:text-cream enabled:hover:bg-sage-deep lg:hidden"
                 >
                   {continueLabel}
                 </button>
 
                 {nearest ? (
-                  <div className="mt-5 rounded-2xl border border-line px-4 py-4">
-                    <p className="text-[11px] tracking-[0.14em] text-ink-soft uppercase">
+                  <div className="mt-auto rounded-2xl border border-line px-5 py-4">
+                    <p className="text-[11px] tracking-[0.16em] text-ink-soft uppercase">
                       Ближайшая свободная дата
                     </p>
-                    <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                      <p className="font-serif text-xl">
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                      <p className="font-serif text-xl md:text-2xl">
                         {formatNearestDate(nearest.start)}, {formatTime(new Date(nearest.start))}
                       </p>
                       <button
                         type="button"
                         onClick={() => selectSlot(nearest.start)}
-                        className={`rounded-full px-4 py-2 text-sm transition-colors ${
+                        className={`rounded-full px-5 py-2.5 text-sm transition-colors ${
                           nearestSelected
                             ? "bg-sage text-cream"
                             : "border border-sage text-sage-deep hover:bg-sage hover:text-cream"
@@ -494,21 +502,21 @@ export function BookingWidget({
                 id="booking-details"
                 noValidate
                 onSubmit={onSubmit}
-                className="min-w-0 scroll-mt-24 border-t border-line p-5 md:p-8 lg:border-t-0 lg:border-l"
+                className="flex min-w-0 scroll-mt-24 flex-col border-t border-line p-6 md:p-8 lg:border-t-0 lg:border-l lg:p-10"
               >
-                <p className="text-sm tracking-[0.16em] text-sage-deep uppercase">Ваша запись</p>
-                <dl className="mt-4 divide-y divide-line text-sm">
-                  <div className="flex items-start justify-between gap-4 py-3">
+                <p className="text-xs tracking-[0.18em] text-sage-deep uppercase">Ваша запись</p>
+                <dl className="mt-5 divide-y divide-line text-sm">
+                  <div className="flex items-start justify-between gap-4 py-3.5">
                     <dt className="text-ink-soft">Формат</dt>
                     <dd className="text-right font-medium">Онлайн-сессия · {duration} мин</dd>
                   </div>
-                  <div className="flex items-start justify-between gap-4 py-3">
+                  <div className="flex items-start justify-between gap-4 py-3.5">
                     <dt className="text-ink-soft">Дата</dt>
                     <dd className={`text-right ${selected ? "font-medium" : "text-ink-soft"}`}>
                       {selected ? formatSummaryDate(selected) : "не выбрана"}
                     </dd>
                   </div>
-                  <div className="flex items-start justify-between gap-4 py-3">
+                  <div className="flex items-start justify-between gap-4 py-3.5">
                     <dt className="text-ink-soft">Время</dt>
                     <dd className={`text-right ${selected ? "font-medium" : "text-ink-soft"}`}>
                       {selected ? formatTime(new Date(selected)) : "не выбрано"}
@@ -516,10 +524,10 @@ export function BookingWidget({
                   </div>
                 </dl>
                 {fieldErrors.slot ? (
-                  <p className="mt-1 text-sm text-terracotta-deep">{fieldErrors.slot}</p>
+                  <p className="mt-2 text-sm text-terracotta-deep">{fieldErrors.slot}</p>
                 ) : null}
 
-                <label className="mt-6 block text-sm">
+                <label className="mt-8 block text-sm">
                   Email для чека
                   <input
                     type="email"
@@ -536,67 +544,69 @@ export function BookingWidget({
                     className={fieldClass(Boolean(fieldErrors.email))}
                   />
                   {fieldErrors.email ? (
-                    <p id="booking-email-error" className="mt-1 text-sm text-terracotta-deep">
+                    <p id="booking-email-error" className="mt-1.5 text-sm text-terracotta-deep">
                       {fieldErrors.email}
                     </p>
                   ) : (
-                    <p id="booking-email-hint" className="mt-1 text-xs text-ink-soft">
+                    <p id="booking-email-hint" className="mt-1.5 text-xs leading-relaxed text-ink-soft">
                       Имя, телефон и Telegram можно добавить позже в личном кабинете.
                     </p>
                   )}
                 </label>
 
-                <div className="mt-6 flex items-baseline justify-between gap-4">
-                  <p className="text-sm text-ink-soft">Итого</p>
-                  <p className="font-serif text-3xl text-sage-deep">{formattedPrice} ₽</p>
+                <div className="mt-auto pt-10">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <p className="text-sm text-ink-soft">Итого</p>
+                    <p className="font-serif text-4xl leading-none text-sage-deep">{formattedPrice} ₽</p>
+                  </div>
+                  <p className="mt-2 text-right text-xs text-ink-soft">
+                    Оплата — после подтверждения времени, не на сайте.
+                  </p>
+
+                  {error && !fieldErrors.email && !fieldErrors.consent ? (
+                    <p className="mt-4 text-sm text-terracotta-deep">{error}</p>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={sending}
+                    className="mt-6 w-full rounded-full bg-terracotta py-3.5 text-sm font-medium text-white transition-colors hover:bg-terracotta-deep disabled:opacity-50"
+                  >
+                    {sending ? "Отправляю…" : "Записаться →"}
+                  </button>
+
+                  <label
+                    className={`mt-5 flex items-start gap-2.5 text-xs leading-relaxed ${
+                      fieldErrors.consent
+                        ? "rounded-xl border border-terracotta bg-terracotta/5 p-3 text-terracotta-deep"
+                        : "text-ink-soft"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => {
+                        setConsent(e.target.checked);
+                        clearFieldError("consent");
+                      }}
+                      aria-invalid={Boolean(fieldErrors.consent)}
+                      aria-describedby={fieldErrors.consent ? "booking-consent-error" : undefined}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      Я согласен(на) на обработку персональных данных и ознакомлен(а) с{" "}
+                      <Link href="/privacy" className="text-sage-deep underline">
+                        Политикой обработки персональных данных
+                      </Link>
+                      .
+                      {fieldErrors.consent ? (
+                        <span id="booking-consent-error" className="mt-1 block">
+                          {fieldErrors.consent}
+                        </span>
+                      ) : null}
+                    </span>
+                  </label>
                 </div>
-                <p className="mt-1 text-right text-xs text-ink-soft">
-                  Оплата — после подтверждения времени, не на сайте.
-                </p>
-
-                {error && !fieldErrors.email && !fieldErrors.consent ? (
-                  <p className="mt-3 text-sm text-terracotta-deep">{error}</p>
-                ) : null}
-
-                <button
-                  type="submit"
-                  disabled={sending}
-                  className="mt-5 w-full rounded-full bg-terracotta py-3 text-sm font-medium text-white transition-colors hover:bg-terracotta-deep disabled:opacity-50"
-                >
-                  {sending ? "Отправляю…" : "Записаться →"}
-                </button>
-
-                <label
-                  className={`mt-4 flex items-start gap-2 rounded-xl text-sm ${
-                    fieldErrors.consent
-                      ? "border border-terracotta bg-terracotta/5 p-3 text-terracotta-deep"
-                      : "text-ink-soft"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={consent}
-                    onChange={(e) => {
-                      setConsent(e.target.checked);
-                      clearFieldError("consent");
-                    }}
-                    aria-invalid={Boolean(fieldErrors.consent)}
-                    aria-describedby={fieldErrors.consent ? "booking-consent-error" : undefined}
-                    className="mt-1"
-                  />
-                  <span>
-                    Я согласен(на) на обработку персональных данных и ознакомлен(а) с{" "}
-                    <Link href="/privacy" className="text-sage-deep underline">
-                      Политикой обработки персональных данных
-                    </Link>
-                    .
-                    {fieldErrors.consent ? (
-                      <span id="booking-consent-error" className="mt-1 block">
-                        {fieldErrors.consent}
-                      </span>
-                    ) : null}
-                  </span>
-                </label>
               </form>
             </div>
           </div>
