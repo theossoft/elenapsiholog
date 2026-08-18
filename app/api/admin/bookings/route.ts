@@ -25,6 +25,16 @@ export async function PATCH(request: Request) {
   const body = await request.json().catch(() => null);
   if (!body?.id) return NextResponse.json({ error: "Нет id" }, { status: 400 });
 
+  if (typeof body.paid === "boolean") {
+    const current = await prisma.booking.findUnique({ where: { id: String(body.id) } });
+    if (!current) return NextResponse.json({ error: "Заявка не найдена" }, { status: 404 });
+    const booking = await prisma.booking.update({
+      where: { id: current.id },
+      data: { paidAt: body.paid ? new Date() : null },
+    });
+    return NextResponse.json({ booking });
+  }
+
   const status = String(body.status || "") as BookingStatus;
   if (!BOOKING_STATUSES.includes(status)) {
     return NextResponse.json({ error: "Неизвестный статус" }, { status: 400 });

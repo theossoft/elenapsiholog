@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatSlot } from "@/lib/moscow";
+import { BOOKING_STATUS_LABELS } from "@/lib/booking-status";
 
 type Booking = {
   id: string;
@@ -13,13 +14,8 @@ type Booking = {
   note: string;
   status: string;
   meetLink: string;
-};
-
-const LABELS: Record<string, string> = {
-  pending: "Ожидает",
-  confirmed: "Подтверждена",
-  cancelled: "Отменена",
-  completed: "Завершена",
+  paidAt: string | null;
+  amountRub: number;
 };
 
 export function BookingsBoard() {
@@ -46,6 +42,20 @@ export function BookingsBoard() {
     });
     if (!res.ok) {
       setError("Не удалось обновить заявку");
+      return;
+    }
+    await load();
+  }
+
+  async function setPaid(id: string, paid: boolean) {
+    setError("");
+    const res = await fetch("/api/admin/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, paid }),
+    });
+    if (!res.ok) {
+      setError("Не удалось отметить оплату");
       return;
     }
     await load();
@@ -85,13 +95,20 @@ export function BookingsBoard() {
                 <tr key={b.id} className="border-t border-line align-top">
                   <td className="px-4 py-3">{formatSlot(new Date(b.slotStart))}</td>
                   <td className="px-4 py-3">
-                    <p className="font-medium">{b.name}</p>
-                    <p>{b.phone}</p>
+                    <p className="font-medium">{b.name.trim() || b.email || "Клиент"}</p>
+                    {b.phone ? <p>{b.phone}</p> : null}
                     {b.telegram ? <p className="text-ink-soft">{b.telegram}</p> : null}
                     {b.email ? <p className="text-ink-soft">{b.email}</p> : null}
                     {b.note ? <p className="mt-1 text-ink-soft">{b.note}</p> : null}
+                    {b.paidAt ? (
+                      <p className="mt-1 text-sage-deep">Оплата отмечена</p>
+                    ) : (
+                      <p className="mt-1 text-ink-soft">Оплата не отмечена</p>
+                    )}
                   </td>
-                  <td className="px-4 py-3">{LABELS[b.status] || b.status}</td>
+                  <td className="px-4 py-3">
+                    {BOOKING_STATUS_LABELS[b.status as keyof typeof BOOKING_STATUS_LABELS] || b.status}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">
                       {b.status === "pending" ? (
@@ -121,6 +138,13 @@ export function BookingsBoard() {
                           Отменить
                         </button>
                       ) : null}
+                      <button
+                        type="button"
+                        onClick={() => setPaid(b.id, !b.paidAt)}
+                        className="rounded-full border border-line px-3 py-1"
+                      >
+                        {b.paidAt ? "Снять оплату" : "Оплата получена"}
+                      </button>
                     </div>
                   </td>
                 </tr>

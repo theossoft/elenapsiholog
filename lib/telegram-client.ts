@@ -5,6 +5,8 @@ import { createBooking } from "@/lib/create-booking";
 import { isCompletePhone, normalizePhone } from "@/lib/booking-form";
 import { formatDayLabel, formatSlot, moscowDateString } from "@/lib/moscow";
 import { listAvailableSlots, type PublicSlot } from "@/lib/slots";
+import { upsertClientIdentity } from "@/lib/client-identity";
+import { getAccountView } from "@/lib/client-account";
 import {
   answerCallback,
   editTelegramMessage,
@@ -32,7 +34,7 @@ type SessionPayload = {
 
 export function clientReplyKeyboard(): ReplyKeyboard {
   return {
-    keyboard: [[{ text: "Моя запись" }, { text: "Записаться" }]],
+    keyboard: [[{ text: "Моя запись" }, { text: "История" }], [{ text: "Записаться" }]],
     resize_keyboard: true,
     is_persistent: true,
   };
@@ -179,6 +181,13 @@ async function upsertClient(input: {
       consentAt,
     },
   });
+  await upsertClientIdentity({
+    name: input.name.trim(),
+    phone,
+    telegram: username,
+    telegramChatId: input.chatId,
+    consentAt,
+  });
   await prisma.booking.updateMany({
     where: {
       phone,
@@ -214,6 +223,10 @@ function isBookingCommand(command: string, label: string) {
   return command === "/booking" || command === "/my" || label === "моя запись";
 }
 
+function isHistoryCommand(command: string, label: string) {
+  return command === "/history" || label === "история";
+}
+
 function isBookCommand(command: string, label: string) {
   return (
     command === "/book" ||
@@ -241,6 +254,44 @@ async function sendMyBooking(chatId: number | string) {
   const [next, ...rest] = bookings;
   const extra = rest.length ? `\n\nЕщё записей: ${rest.length}.` : "";
   await sendTelegramMessage(chatId, `${clientBookingCard(next, "Ваша запись")}${extra}`, clientReplyKeyboard());
+}
+
+async function sendHistory(chatId: number | string) {
+  const id = String(chatId);
+  const telegramClient = await getClient(id);
+  const account = telegramClient
+    ? await prisma.client.findFirst({
+        where: {
+          OR: [
+            { telegramChatId: id },
+            telegramClient.phone ? { phone: telegramClient.phone } : undefined,
+          ].filter(Boolean) as { telegramChatId?: string; phone?: string }[],
+        },
+      })
+    : await prisma.client.findFirst({ where: { telegramChatId: id } });
+
+  if (!account) {
+    await sendTelegramMessage(
+      chatId,
+      "Истории пока нет. После записи она появится здесь и в кабинете на сайте.",
+      clientReplyKeyboard(),
+    );
+    return;
+  }
+
+  const view = await getAccountView(account.id);
+  const items = view?.history.slice(0, 5) || [];
+  if (!items.length) {
+    await sendTelegramMessage(chatId, "Прошедших сессий пока нет.", clientReplyKeyboard());
+    return;
+  }
+
+  const lines = items.map((row) => `• ${formatSlot(new Date(row.slotStart))} — ${row.statusLabel}`);
+  await sendTelegramMessage(
+    chatId,
+    `<b>История сеансов</b>\n${lines.join("\n")}`,
+    clientReplyKeyboard(),
+  );
 }
 
 async function startOnboarding(
@@ -442,6 +493,11 @@ export async function handleClientMessage(message: NonNullable<TelegramUpdate["m
 
   if (isBookingCommand(command, label)) {
     await sendMyBooking(chatId);
+    return;
+  }
+
+  if (isHistoryCommand(command, label)) {
+    await sendHistory(chatId);
     return;
   }
 

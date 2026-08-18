@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createBooking } from "@/lib/create-booking";
 import { normalizePhone } from "@/lib/booking-form";
+import { CLIENT_COOKIE, readClientToken } from "@/lib/client-session";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +12,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
   }
 
+  const jar = await cookies();
+  const clientId = readClientToken(jar.get(CLIENT_COOKIE)?.value || "") || undefined;
+
   const result = await createBooking({
     name: String(body.name || ""),
     phone: normalizePhone(String(body.phone || "")),
@@ -18,6 +23,8 @@ export async function POST(request: Request) {
     note: String(body.note || ""),
     slotStart: String(body.slotStart || ""),
     consent: Boolean(body.consent),
+    clientId,
+    mode: "web",
   });
 
   if (!result.ok) {

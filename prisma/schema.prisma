@@ -41,7 +41,7 @@ model Setting {
   aboutP2          String @default("Верю, что осознание своих эмоций и мыслей — первый шаг. Дальше идём вместе, в диалоге, в темпе, который вам подходит.")
   teensLead        String @default("Работаю с детьми и подростками: страхи, общение, семейные кризисы. Иногда встреча нужна родителю, иногда — подростку. Это обсуждаем заранее.")
   priceLead        String @default("Оплата — переводом после того, как я подтвержу время. На сайте ничего списывать не нужно: сначала договариваемся, потом встречаемся.")
-  bookingLead      String @default("Слот бронируется после заявки. Я подтверждаю встречу в мессенджере и присылаю способ оплаты. Часовой пояс — Москва.")
+  bookingLead      String @default("Слот бронируется после заявки. Достаточно email для чека — имя и телефон можно добавить в кабинете. Я подтверждаю встречу в мессенджере и присылаю способ оплаты. Часовой пояс — Москва.")
 }
 
 model WeeklyAvailability {
@@ -58,12 +58,45 @@ model AvailabilityException {
   time   String?
 }
 
+model Client {
+  id             String    @id @default(cuid())
+  email          String?   @unique
+  phone          String    @default("")
+  name           String    @default("")
+  telegram       String    @default("")
+  telegramChatId String    @default("")
+  maxUserId      String    @default("")
+  vkId           String?   @unique
+  note           String    @default("")
+  emailVerifiedAt DateTime?
+  consentAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  bookings       Booking[]
+
+  @@index([phone])
+  @@index([telegramChatId])
+  @@index([maxUserId])
+}
+
+model LoginCode {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
+
 model Booking {
   id             String    @id @default(cuid())
   slotStart      DateTime  @unique
   slotEnd        DateTime
-  name           String
-  phone          String
+  name           String    @default("")
+  phone          String    @default("")
   telegram       String    @default("")
   telegramChatId String    @default("")
   linkToken      String?   @unique
@@ -71,10 +104,17 @@ model Booking {
   note           String    @default("")
   status         String    @default("pending")
   meetLink       String    @default("")
+  amountRub      Int       @default(0)
+  paidAt         DateTime?
+  clientId       String?
+  client         Client?   @relation(fields: [clientId], references: [id])
   consentAt      DateTime
   remindedAt     DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  @@index([clientId])
+  @@index([email])
 }
 
 model TelegramClient {

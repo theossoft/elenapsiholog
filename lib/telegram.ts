@@ -124,8 +124,8 @@ export function bookingCard(booking: Booking, title: string) {
   return [
     `<b>${escapeHtml(title)}</b>`,
     formatSlot(booking.slotStart),
-    `Имя: ${escapeHtml(booking.name)}`,
-    `Телефон: ${escapeHtml(booking.phone)}`,
+    booking.name ? `Имя: ${escapeHtml(booking.name)}` : "Имя: пока не указано",
+    booking.phone ? `Телефон: ${escapeHtml(booking.phone)}` : "",
     booking.telegram ? `Telegram: ${escapeHtml(booking.telegram)}` : "",
     booking.email ? `Email: ${escapeHtml(booking.email)}` : "",
     booking.note ? `Запрос: ${escapeHtml(booking.note)}` : "",

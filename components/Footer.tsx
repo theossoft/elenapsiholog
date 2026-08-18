@@ -32,6 +32,7 @@ export function Footer() {
           >
             Telegram
           </a>
+          <Link href="/?login=1">Личный кабинет</Link>
           <Link href="/privacy">Политика конфиденциальности</Link>
           <Link href="/offer">Оферта</Link>
           <Link href="/admin" className="opacity-50">

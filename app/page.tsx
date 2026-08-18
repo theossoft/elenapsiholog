@@ -13,20 +13,33 @@ import { GoalClicks } from "@/components/GoalClicks";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { landingCopyFrom } from "@/lib/copy";
+import { getCurrentClient } from "@/lib/client-session";
+import { vkConfigured } from "@/lib/vk-id";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ login?: string; error?: string }>;
+}) {
+  const query = await searchParams;
   const settings = await prisma.setting.findUnique({ where: { id: "default" } });
   const price = settings?.price ?? SITE.defaultPrice;
   const duration = settings?.durationMin ?? SITE.sessionMin;
   const copy = landingCopyFrom(settings);
+  const client = await getCurrentClient();
 
   return (
     <>
       <JsonLd price={price} />
       <GoalClicks />
-      <Header />
+      <Header
+        loggedIn={Boolean(client)}
+        vkEnabled={vkConfigured()}
+        openLogin={query.login === "1"}
+        loginError={query.error || ""}
+      />
       <main className="pb-20 md:pb-0">
         <Hero copy={copy} />
         <Topics copy={copy} />

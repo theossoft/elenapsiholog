@@ -4,6 +4,20 @@ import { prisma } from "./prisma";
 export const BOOKING_STATUSES = ["pending", "confirmed", "cancelled", "completed"] as const;
 export type BookingStatus = (typeof BOOKING_STATUSES)[number];
 
+export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
+  pending: "Ожидает",
+  confirmed: "Подтверждена",
+  cancelled: "Отменена",
+  completed: "Завершена",
+};
+
+export function bookingStatusLabel(status: string) {
+  if (status in BOOKING_STATUS_LABELS) {
+    return BOOKING_STATUS_LABELS[status as BookingStatus];
+  }
+  return status;
+}
+
 export async function setBookingStatus(
   id: string,
   status: BookingStatus,

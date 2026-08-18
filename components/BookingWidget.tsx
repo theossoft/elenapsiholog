@@ -6,6 +6,7 @@ import { SITE } from "@/lib/site";
 import { trackGoal } from "@/lib/track";
 import type { LandingCopy } from "@/lib/copy";
 import { validateBookingFields, type BookingField } from "@/lib/booking-form";
+import { openClientLogin } from "@/components/LoginModal";
 import {
   compareMoscowMonth,
   formatMonthTitle,
@@ -88,11 +89,8 @@ export function BookingWidget({
   const [view, setView] = useState<MonthView>(() => monthFromDate(moscowDateString(new Date())));
   const [day, setDay] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [telegram, setTelegram] = useState("");
-  const [note, setNote] = useState("");
+  const [loggedIn, setLoggedIn] = useState(false);
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<BookingField, string>>>({});
@@ -136,6 +134,15 @@ export function BookingWidget({
 
   useEffect(() => {
     loadSlots();
+    fetch("/api/account/me", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.loggedIn) {
+          setLoggedIn(true);
+          if (data.email) setEmail(data.email);
+        }
+      })
+      .catch(() => undefined);
   }, []);
 
   const days = useMemo(() => {
@@ -190,15 +197,14 @@ export function BookingWidget({
     e.preventDefault();
     setError("");
     const nextErrors = validateBookingFields({
-      name,
-      phone,
       email,
       consent,
       slotStart: selected,
+      mode: "web",
     });
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      if (nextErrors.slot && !nextErrors.name && !nextErrors.phone && !nextErrors.email && !nextErrors.consent) {
+      if (nextErrors.slot && !nextErrors.email && !nextErrors.consent) {
         setError(nextErrors.slot);
       }
       if (nextErrors.slot) scrollToDetails();
@@ -211,11 +217,7 @@ export function BookingWidget({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           slotStart: selected,
-          name,
-          phone,
           email,
-          telegram,
-          note,
           consent,
         }),
       });
@@ -232,11 +234,6 @@ export function BookingWidget({
       trackGoal("booking_success");
       setSelected(null);
       setDay(null);
-      setName("");
-      setPhone("");
-      setEmail("");
-      setTelegram("");
-      setNote("");
       setConsent(false);
       setFieldErrors({});
       await loadSlots();
@@ -276,14 +273,32 @@ export function BookingWidget({
                   Открыть бота записи
                 </a>
               ) : null}
+              {loggedIn ? (
+                <a
+                  href="/account"
+                  className={`inline-flex rounded-full px-5 py-2.5 text-sm ${
+                    botUrl ? "border border-sage text-sage-deep" : "bg-terracotta text-white"
+                  }`}
+                >
+                  Открыть кабинет
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openClientLogin(email)}
+                  className={`inline-flex rounded-full px-5 py-2.5 text-sm ${
+                    botUrl ? "border border-sage text-sage-deep" : "bg-terracotta text-white"
+                  }`}
+                >
+                  Войти в кабинет
+                </button>
+              )}
               <a
                 href={SITE.max}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-goal="max_click"
-                className={`inline-flex rounded-full px-5 py-2.5 text-sm ${
-                  botUrl ? "border border-sage text-sage-deep" : "bg-terracotta text-white"
-                }`}
+                className="inline-flex rounded-full border border-sage px-5 py-2.5 text-sm text-sage-deep"
               >
                 {successMaxCta}
               </a>
@@ -505,50 +520,7 @@ export function BookingWidget({
                 ) : null}
 
                 <label className="mt-6 block text-sm">
-                  Имя
-                  <input
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      clearFieldError("name");
-                    }}
-                    autoComplete="name"
-                    aria-invalid={Boolean(fieldErrors.name)}
-                    aria-describedby={fieldErrors.name ? "booking-name-error" : undefined}
-                    className={fieldClass(Boolean(fieldErrors.name))}
-                  />
-                  {fieldErrors.name ? (
-                    <p id="booking-name-error" className="mt-1 text-sm text-terracotta-deep">
-                      {fieldErrors.name}
-                    </p>
-                  ) : null}
-                </label>
-
-                <label className="mt-4 block text-sm">
-                  Телефон
-                  <input
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => {
-                      setPhone(e.target.value);
-                      clearFieldError("phone");
-                    }}
-                    placeholder="+7"
-                    aria-invalid={Boolean(fieldErrors.phone)}
-                    aria-describedby={fieldErrors.phone ? "booking-phone-error" : undefined}
-                    className={fieldClass(Boolean(fieldErrors.phone))}
-                  />
-                  {fieldErrors.phone ? (
-                    <p id="booking-phone-error" className="mt-1 text-sm text-terracotta-deep">
-                      {fieldErrors.phone}
-                    </p>
-                  ) : null}
-                </label>
-
-                <label className="mt-4 block text-sm">
-                  Email <span className="text-ink-soft">(по желанию)</span>
+                  Email для чека
                   <input
                     type="email"
                     autoComplete="email"
@@ -558,35 +530,20 @@ export function BookingWidget({
                       clearFieldError("email");
                     }}
                     placeholder="you@example.com"
+                    readOnly={loggedIn && Boolean(email)}
                     aria-invalid={Boolean(fieldErrors.email)}
-                    aria-describedby={fieldErrors.email ? "booking-email-error" : undefined}
+                    aria-describedby={fieldErrors.email ? "booking-email-error" : "booking-email-hint"}
                     className={fieldClass(Boolean(fieldErrors.email))}
                   />
                   {fieldErrors.email ? (
                     <p id="booking-email-error" className="mt-1 text-sm text-terracotta-deep">
                       {fieldErrors.email}
                     </p>
-                  ) : null}
-                </label>
-
-                <label className="mt-4 block text-sm">
-                  Telegram <span className="text-ink-soft">(по желанию)</span>
-                  <input
-                    value={telegram}
-                    onChange={(e) => setTelegram(e.target.value)}
-                    autoComplete="off"
-                    className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2.5 outline-none ring-sage/40 focus:ring-2"
-                  />
-                </label>
-
-                <label className="mt-4 block text-sm">
-                  Короткий запрос <span className="text-ink-soft">(по желанию)</span>
-                  <textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    rows={3}
-                    className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2.5 outline-none ring-sage/40 focus:ring-2"
-                  />
+                  ) : (
+                    <p id="booking-email-hint" className="mt-1 text-xs text-ink-soft">
+                      Имя, телефон и Telegram можно добавить позже в личном кабинете.
+                    </p>
+                  )}
                 </label>
 
                 <div className="mt-6 flex items-baseline justify-between gap-4">
@@ -597,7 +554,7 @@ export function BookingWidget({
                   Оплата — после подтверждения времени, не на сайте.
                 </p>
 
-                {error && !fieldErrors.name && !fieldErrors.phone && !fieldErrors.email && !fieldErrors.consent ? (
+                {error && !fieldErrors.email && !fieldErrors.consent ? (
                   <p className="mt-3 text-sm text-terracotta-deep">{error}</p>
                 ) : null}
 

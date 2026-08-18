@@ -1,6 +1,17 @@
 import { SITE } from "@/lib/site";
+import { AuthEntry } from "@/components/AuthEntry";
 
-export function Header() {
+export function Header({
+  loggedIn = false,
+  vkEnabled = false,
+  openLogin = false,
+  loginError = "",
+}: {
+  loggedIn?: boolean;
+  vkEnabled?: boolean;
+  openLogin?: boolean;
+  loginError?: string;
+}) {
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-cream/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3 md:px-8">
@@ -24,7 +35,7 @@ export function Header() {
             Вопросы
           </a>
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <a
             href={SITE.max}
             target="_blank"
@@ -43,6 +54,12 @@ export function Header() {
           >
             Telegram
           </a>
+          <AuthEntry
+            vkEnabled={vkEnabled}
+            loggedIn={loggedIn}
+            initialOpen={openLogin}
+            initialError={loginError}
+          />
           <a
             href="#zapis"
             data-goal="zapis_click"
