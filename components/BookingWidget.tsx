@@ -628,9 +628,9 @@ export function BookingWidget({
                     className="mt-1"
                   />
                   <span>
-                    Соглашаюсь на обработку персональных данных согласно{" "}
+                    Я согласен(на) на обработку персональных данных и ознакомлен(а) с{" "}
                     <Link href="/privacy" className="text-sage-deep underline">
-                      политике
+                      Политикой обработки персональных данных
                     </Link>
                     .
                     {fieldErrors.consent ? (
