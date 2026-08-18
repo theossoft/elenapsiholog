@@ -390,34 +390,33 @@ export function BookingWidget({
                       ))}
                     </div>
                     <div
-                      className={`grid grid-cols-7 ${fieldErrors.slot ? "rounded-2xl ring-2 ring-terracotta/50 ring-offset-2" : ""}`}
+                      className={`grid grid-cols-7 gap-1.5 ${fieldErrors.slot ? "rounded-2xl ring-2 ring-terracotta/50 ring-offset-2" : ""}`}
                       role="grid"
                       aria-label="Календарь свободных дат"
                     >
                       {monthCells.map((date, index) => {
-                        if (!date) return <span key={`empty-${index}`} className="flex justify-center" />;
+                        if (!date) return <span key={`empty-${index}`} />;
                         const available = availableDates.has(date);
                         const isSelected = day === date;
                         const dayNum = parseMoscowDate(date).day;
                         return (
-                          <div key={date} className="flex justify-center">
-                            <button
-                              type="button"
-                              disabled={!available}
-                              onClick={() => selectDay(date)}
-                              aria-pressed={isSelected}
-                              aria-label={`${date}${available ? ", есть слоты" : ", нет слотов"}`}
-                              className={`flex h-8 w-8 items-center justify-center rounded-md text-sm transition-colors md:h-9 md:w-9 ${
-                                isSelected
-                                  ? "bg-sage font-medium text-cream"
-                                  : available
-                                    ? "border border-sage/70 text-ink hover:bg-sage/10"
-                                    : "cursor-default text-ink/35"
-                              }`}
-                            >
-                              {dayNum}
-                            </button>
-                          </div>
+                          <button
+                            key={date}
+                            type="button"
+                            disabled={!available}
+                            onClick={() => selectDay(date)}
+                            aria-pressed={isSelected}
+                            aria-label={`${date}${available ? ", есть слоты" : ", нет слотов"}`}
+                            className={`flex h-8 w-full items-center justify-center rounded-lg text-sm transition-colors md:h-9 ${
+                              isSelected
+                                ? "bg-sage font-medium text-cream"
+                                : available
+                                  ? "border border-sage/70 text-ink hover:bg-sage/10"
+                                  : "cursor-default text-ink/35"
+                            }`}
+                          >
+                            {dayNum}
+                          </button>
                         );
                       })}
                     </div>
