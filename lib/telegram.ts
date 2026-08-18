@@ -1,3 +1,4 @@
+import { request as httpsRequest } from "node:https";
 import type { Booking } from "@prisma/client";
 import {
   daysInMoscowMonth,
@@ -241,22 +242,71 @@ export function splitTelegramText(text: string, limit = 3900) {
   return parts;
 }
 
+function postTelegram(path: string, payload: string, family: 4 | 6) {
+  return new Promise<{ status: number; text: string }>((resolve, reject) => {
+    const req = httpsRequest(
+      {
+        hostname: "api.telegram.org",
+        path,
+        method: "POST",
+        family,
+        timeout: 15000,
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload),
+        },
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk) => chunks.push(chunk as Buffer));
+        res.on("end", () => {
+          resolve({
+            status: res.statusCode || 0,
+            text: Buffer.concat(chunks).toString("utf8"),
+          });
+        });
+      },
+    );
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
 async function telegramCall(method: string, body: Record<string, unknown> = {}) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return null;
 
-  const res = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const path = `/bot${token}/${method}`;
+  const payload = JSON.stringify(body);
+  // This host has working IPv6 to Telegram and a black-holed IPv4.
+  // Next.js fetch races both and hits ConnectTimeoutError.
+  let res: { status: number; text: string };
+  try {
+    res = await postTelegram(path, payload, 6);
+  } catch (error) {
+    console.error("[telegram]", method, "ipv6 failed", error);
+    try {
+      res = await postTelegram(path, payload, 4);
+    } catch (fallback) {
+      console.error("[telegram]", method, fallback);
+      return null;
+    }
+  }
 
-  const payload = (await res.json().catch(() => null)) as TelegramApiResponse | null;
-  if (!res.ok || !payload?.ok) {
-    console.error("[telegram]", method, payload);
+  const parsed = (() => {
+    try {
+      return JSON.parse(res.text) as TelegramApiResponse;
+    } catch {
+      return null;
+    }
+  })();
+  if (res.status >= 400 || !parsed?.ok) {
+    console.error("[telegram]", method, parsed || res.text);
     return null;
   }
-  return payload;
+  return parsed;
 }
 
 export async function telegramBotUsername() {
