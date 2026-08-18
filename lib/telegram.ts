@@ -1,4 +1,4 @@
-import { request as httpsRequest } from "node:https";
+import https from "https";
 import type { Booking } from "@prisma/client";
 import {
   daysInMoscowMonth,
@@ -244,7 +244,7 @@ export function splitTelegramText(text: string, limit = 3900) {
 
 function postTelegram(path: string, payload: string, family: 4 | 6) {
   return new Promise<{ status: number; text: string }>((resolve, reject) => {
-    const req = httpsRequest(
+    const req = https.request(
       {
         hostname: "api.telegram.org",
         path,
