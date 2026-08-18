@@ -127,6 +127,7 @@ export function bookingCard(booking: Booking, title: string) {
     `Имя: ${escapeHtml(booking.name)}`,
     `Телефон: ${escapeHtml(booking.phone)}`,
     booking.telegram ? `Telegram: ${escapeHtml(booking.telegram)}` : "",
+    booking.email ? `Email: ${escapeHtml(booking.email)}` : "",
     booking.note ? `Запрос: ${escapeHtml(booking.note)}` : "",
     booking.meetLink ? `Ссылка: ${escapeHtml(booking.meetLink)}` : "",
   ]

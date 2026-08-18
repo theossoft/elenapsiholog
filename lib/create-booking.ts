@@ -51,10 +51,13 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   const fieldErrors = validateBookingFields({
     name,
     phone: String(input.phone || ""),
+    email,
     consent,
     slotStart: slotStartRaw,
   });
-  const firstField = (["name", "phone", "consent", "slot"] as const).find((field) => fieldErrors[field]);
+  const firstField = (["name", "phone", "email", "consent", "slot"] as const).find(
+    (field) => fieldErrors[field],
+  );
   if (firstField) {
     return { ok: false, error: fieldErrors[firstField] || "Проверьте форму", field: firstField, status: 400 };
   }

@@ -1,4 +1,8 @@
-export type BookingField = "name" | "phone" | "consent" | "slot";
+export type BookingField = "name" | "phone" | "email" | "consent" | "slot";
+
+export function isValidEmail(raw: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw.trim());
+}
 
 export function normalizePhone(raw: string) {
   const digits = raw.replace(/\D/g, "");
@@ -17,6 +21,7 @@ export function isCompletePhone(raw: string) {
 export function validateBookingFields(input: {
   name: string;
   phone: string;
+  email?: string;
   consent: boolean;
   slotStart?: string | null;
 }) {
@@ -31,6 +36,9 @@ export function validateBookingFields(input: {
   else if (!isCompletePhone(input.phone)) {
     errors.phone = "Неполный номер. Введите все 11 цифр, например +7 908 129-41-16";
   }
+
+  const email = (input.email || "").trim();
+  if (email && !isValidEmail(email)) errors.email = "Проверьте адрес email";
 
   if (!input.consent) {
     errors.consent = "Нужно согласие на обработку персональных данных";

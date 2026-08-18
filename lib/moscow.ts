@@ -109,3 +109,41 @@ export function timeToMinutes(time: string) {
 export function minutesToTime(total: number) {
   return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
 }
+
+export function parseMoscowDate(date: string) {
+  const [year, month, day] = date.split("-").map(Number);
+  return { year, month, day };
+}
+
+export function shiftMoscowMonth(year: number, month: number, delta: number) {
+  let nextMonth = month + delta;
+  let nextYear = year;
+  while (nextMonth > 12) {
+    nextMonth -= 12;
+    nextYear += 1;
+  }
+  while (nextMonth < 1) {
+    nextMonth += 12;
+    nextYear -= 1;
+  }
+  return { year: nextYear, month: nextMonth };
+}
+
+export function compareMoscowMonth(
+  a: { year: number; month: number },
+  b: { year: number; month: number },
+) {
+  return a.year * 12 + a.month - (b.year * 12 + b.month);
+}
+
+export function moscowMonthDays(year: number, month: number) {
+  const weekday = weekdayOfDate(`${year}-${pad(month)}-01`);
+  const lastDay = daysInMoscowMonth(year, month);
+  const cells: (string | null)[] = [];
+  for (let i = 1; i < weekday; i += 1) cells.push(null);
+  for (let day = 1; day <= lastDay; day += 1) {
+    cells.push(`${year}-${pad(month)}-${pad(day)}`);
+  }
+  while (cells.length % 7 !== 0) cells.push(null);
+  return cells;
+}

@@ -34,7 +34,7 @@ export default async function HomePage() {
         <About copy={copy} />
         <Pricing price={price} duration={duration} copy={copy} />
         <Faq />
-        <BookingWidget copy={copy} />
+        <BookingWidget copy={copy} price={price} duration={duration} />
       </main>
       <Footer />
       <StickyCta />

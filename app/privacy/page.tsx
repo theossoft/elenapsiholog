@@ -27,7 +27,7 @@ export default function PrivacyPage() {
       </p>
       <h2 className="font-serif mt-8 text-2xl">Какие данные собираем</h2>
       <ul className="mt-2 list-disc pl-5">
-        <li>имя, телефон, Telegram, идентификатор чата в боте записи и текст запроса — если вы оставляете заявку или пишете боту;</li>
+        <li>имя, телефон, email, Telegram, идентификатор чата в боте записи и текст запроса — если вы оставляете заявку или пишете боту;</li>
         <li>технические данные визита (cookies Метрики) — только после согласия.</li>
       </ul>
       <h2 className="font-serif mt-8 text-2xl">Зачем</h2>

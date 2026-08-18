@@ -9,6 +9,7 @@ type Booking = {
   name: string;
   phone: string;
   telegram: string;
+  email: string;
   note: string;
   status: string;
   meetLink: string;
@@ -87,6 +88,7 @@ export function BookingsBoard() {
                     <p className="font-medium">{b.name}</p>
                     <p>{b.phone}</p>
                     {b.telegram ? <p className="text-ink-soft">{b.telegram}</p> : null}
+                    {b.email ? <p className="text-ink-soft">{b.email}</p> : null}
                     {b.note ? <p className="mt-1 text-ink-soft">{b.note}</p> : null}
                   </td>
                   <td className="px-4 py-3">{LABELS[b.status] || b.status}</td>
