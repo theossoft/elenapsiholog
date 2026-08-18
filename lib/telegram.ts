@@ -241,9 +241,13 @@ export function splitTelegramText(text: string, limit = 3900) {
   return parts;
 }
 
+function nodeHttps() {
+  const load = new Function("return require")() as NodeRequire;
+  return load("https") as typeof import("https");
+}
+
 function postTelegram(path: string, payload: string, family: 4 | 6) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const https = require(/* webpackIgnore: true */ "https") as typeof import("https");
+  const https = nodeHttps();
   return new Promise<{ status: number; text: string }>((resolve, reject) => {
     const req = https.request(
       {
