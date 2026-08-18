@@ -1,4 +1,3 @@
-import https from "https";
 import type { Booking } from "@prisma/client";
 import {
   daysInMoscowMonth,
@@ -243,6 +242,8 @@ export function splitTelegramText(text: string, limit = 3900) {
 }
 
 function postTelegram(path: string, payload: string, family: 4 | 6) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const https = require(/* webpackIgnore: true */ "https") as typeof import("https");
   return new Promise<{ status: number; text: string }>((resolve, reject) => {
     const req = https.request(
       {

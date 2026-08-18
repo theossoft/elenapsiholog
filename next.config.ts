@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/webp"],
   },
+  serverExternalPackages: ["https"],
 };
 
 export default nextConfig;
