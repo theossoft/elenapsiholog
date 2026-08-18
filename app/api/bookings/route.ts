@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { isSlotFree } from "@/lib/slots";
-import { addMinutes } from "@/lib/moscow";
-import { notifyNewBooking } from "@/lib/telegram";
-import { landingCopyFrom } from "@/lib/copy";
-import { normalizePhone, validateBookingFields } from "@/lib/booking-form";
+import { createBooking } from "@/lib/create-booking";
+import { normalizePhone } from "@/lib/booking-form";
 
 export const dynamic = "force-dynamic";
 
@@ -14,72 +10,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 });
   }
 
-  const name = String(body.name || "").trim();
-  const phone = normalizePhone(String(body.phone || ""));
-  const telegram = String(body.telegram || "").trim().slice(0, 80);
-  const email = String(body.email || "").trim().slice(0, 120);
-  const note = String(body.note || "").trim().slice(0, 1000);
-  const slotStartRaw = String(body.slotStart || "");
-  const consent = Boolean(body.consent);
-
-  const fieldErrors = validateBookingFields({
-    name,
-    phone: String(body.phone || ""),
-    consent,
-    slotStart: slotStartRaw,
+  const result = await createBooking({
+    name: String(body.name || ""),
+    phone: normalizePhone(String(body.phone || "")),
+    telegram: String(body.telegram || ""),
+    email: String(body.email || ""),
+    note: String(body.note || ""),
+    slotStart: String(body.slotStart || ""),
+    consent: Boolean(body.consent),
   });
-  const firstField = (["name", "phone", "consent", "slot"] as const).find((field) => fieldErrors[field]);
-  if (firstField) {
+
+  if (!result.ok) {
     return NextResponse.json(
-      { error: fieldErrors[firstField], field: firstField },
-      { status: 400 },
+      { error: result.error, field: result.field },
+      { status: result.status },
     );
   }
 
-  const slotStart = new Date(slotStartRaw);
-
-  const settings = await prisma.setting.findUnique({ where: { id: "default" } });
-  const duration = settings?.durationMin ?? 55;
-
-  const free = await isSlotFree(slotStart);
-  if (!free) {
-    return NextResponse.json(
-      { error: "Это время уже занято. Выберите другой слот." },
-      { status: 409 },
-    );
-  }
-
-  try {
-    const booking = await prisma.booking.create({
-      data: {
-        slotStart,
-        slotEnd: addMinutes(slotStart, duration),
-        name,
-        phone,
-        telegram,
-        email,
-        note,
-        status: "pending",
-        consentAt: new Date(),
-      },
-    });
-
-    await notifyNewBooking(booking);
-
-    return NextResponse.json({
-      ok: true,
-      id: booking.id,
-      message: landingCopyFrom(settings).successText,
-    });
-  } catch (error: unknown) {
-    const code = typeof error === "object" && error && "code" in error ? error.code : "";
-    if (code === "P2002") {
-      return NextResponse.json(
-        { error: "Это время уже занято. Выберите другой слот." },
-        { status: 409 },
-      );
-    }
-    console.error(error);
-    return NextResponse.json({ error: "Не удалось записаться. Попробуйте ещё раз." }, { status: 500 });
-  }
+  return NextResponse.json({
+    ok: true,
+    id: result.booking.id,
+    botUrl: result.botUrl,
+    message: result.message,
+  });
 }

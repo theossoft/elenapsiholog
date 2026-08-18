@@ -24,7 +24,7 @@ export const DEFAULT_COPY = {
     "Слот бронируется после заявки. Я подтверждаю встречу в мессенджере и присылаю способ оплаты. Часовой пояс — Москва.",
   successTitle: "Готово",
   successText:
-    "Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.",
+    "Заявка принята. Откройте бота записи, чтобы видеть время и получить напоминание. Я напишу в MAX или Telegram, чтобы подтвердить встречу.",
   successMaxCta: "Написать в MAX",
   successTelegramCta: "Написать в Telegram",
 };
@@ -32,6 +32,8 @@ export const DEFAULT_COPY = {
 export type LandingCopy = typeof DEFAULT_COPY;
 
 const KEYS = Object.keys(DEFAULT_COPY) as (keyof LandingCopy)[];
+const LEGACY_SUCCESS_TEXT =
+  "Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.";
 
 export function landingCopyFrom(
   source?: Partial<LandingCopy> | null,
@@ -43,5 +45,6 @@ export function landingCopyFrom(
     if (typeof value === "string" && value.trim()) copy[key] = value.trim();
   }
   copy.successText = copy.successText.replaceAll("WhatsApp", "MAX");
+  if (copy.successText === LEGACY_SUCCESS_TEXT) copy.successText = DEFAULT_COPY.successText;
   return copy;
 }

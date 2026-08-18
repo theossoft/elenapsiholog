@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { addMinutes } from "@/lib/moscow";
-import { bookingCard, notifyTelegram } from "@/lib/telegram";
+import { bookingCard, notifyTelegram, sendTelegramMessage } from "@/lib/telegram";
+import { clientReminderText, clientReplyKeyboard } from "@/lib/telegram-client";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,13 @@ export async function GET(request: Request) {
 
   for (const booking of bookings) {
     await notifyTelegram(bookingCard(booking, "Напоминание: сессия через час"));
+    if (booking.telegramChatId) {
+      await sendTelegramMessage(
+        booking.telegramChatId,
+        clientReminderText(booking),
+        clientReplyKeyboard(),
+      );
+    }
     await prisma.booking.update({
       where: { id: booking.id },
       data: { remindedAt: new Date() },

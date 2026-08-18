@@ -18,9 +18,10 @@ export type InlineKeyboard = {
 };
 
 export type ReplyKeyboard = {
-  keyboard: { text: string }[][];
+  keyboard: { text: string; request_contact?: boolean }[][];
   resize_keyboard?: boolean;
   is_persistent?: boolean;
+  one_time_keyboard?: boolean;
 };
 
 export type TelegramMarkup = InlineKeyboard | ReplyKeyboard;
@@ -31,7 +32,18 @@ type NotifyOptions = {
 };
 
 type TelegramChat = { id: number };
-type TelegramUser = { id: number };
+type TelegramUser = {
+  id: number;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+};
+
+export type TelegramContact = {
+  phone_number: string;
+  first_name: string;
+  user_id?: number;
+};
 
 export type TelegramUpdate = {
   message?: {
@@ -39,6 +51,7 @@ export type TelegramUpdate = {
     chat: TelegramChat;
     from?: TelegramUser;
     text?: string;
+    contact?: TelegramContact;
   };
   callback_query?: {
     id: string;
@@ -51,6 +64,13 @@ export type TelegramUpdate = {
     };
   };
 };
+
+type TelegramApiResponse = {
+  ok?: boolean;
+  result?: unknown;
+};
+
+let cachedBotUsername = (process.env.TELEGRAM_BOT_USERNAME || "").replace(/^@/, "").trim();
 
 export function escapeHtml(text: string) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -112,16 +132,6 @@ export function bookingCard(booking: Booking, title: string) {
   ]
     .filter(Boolean)
     .join("\n");
-}
-
-export function guestHelpText() {
-  return [
-    "Это бот записи на сессии Елены Ивановой, не чат с психологом.",
-    "",
-    "Чтобы записаться или написать:",
-    SITE.url,
-    `Telegram: ${SITE.telegram}`,
-  ].join("\n");
 }
 
 export function adminHelpText() {
@@ -230,7 +240,7 @@ export function splitTelegramText(text: string, limit = 3900) {
   return parts;
 }
 
-async function telegramCall(method: string, body: Record<string, unknown>) {
+async function telegramCall(method: string, body: Record<string, unknown> = {}) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return null;
 
@@ -240,12 +250,28 @@ async function telegramCall(method: string, body: Record<string, unknown>) {
     body: JSON.stringify(body),
   });
 
-  const payload = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+  const payload = (await res.json().catch(() => null)) as TelegramApiResponse | null;
   if (!res.ok || !payload?.ok) {
     console.error("[telegram]", method, payload);
     return null;
   }
   return payload;
+}
+
+export async function telegramBotUsername() {
+  if (cachedBotUsername) return cachedBotUsername;
+  const payload = await telegramCall("getMe");
+  const result = payload?.result as { username?: string } | undefined;
+  const username = (result?.username || "").replace(/^@/, "").trim();
+  if (username) cachedBotUsername = username;
+  return username;
+}
+
+export async function telegramBotStartUrl(token?: string) {
+  const username = await telegramBotUsername();
+  if (!username) return "";
+  if (token) return `https://t.me/${username}?start=${encodeURIComponent(token)}`;
+  return `https://t.me/${username}`;
 }
 
 export async function notifyTelegram(text: string, options?: NotifyOptions) {
@@ -319,12 +345,26 @@ export async function setTelegramWebhook(url: string, dropPending = false) {
     drop_pending_updates: dropPending,
     ...(ip ? { ip_address: ip } : {}),
   });
+  await telegramBotUsername();
   await telegramCall("setMyCommands", {
     commands: [
       { command: "start", description: "О боте" },
-      { command: "calendar", description: "Календарь встреч" },
-      { command: "pending", description: "Заявки в ожидании" },
+      { command: "booking", description: "Моя запись" },
+      { command: "book", description: "Записаться" },
     ],
+    scope: { type: "default" },
   });
+  await Promise.all(
+    adminChatIds().map((chat_id) =>
+      telegramCall("setMyCommands", {
+        commands: [
+          { command: "start", description: "О боте" },
+          { command: "calendar", description: "Календарь встреч" },
+          { command: "pending", description: "Заявки в ожидании" },
+        ],
+        scope: { type: "chat", chat_id },
+      }),
+    ),
+  );
   return webhook;
 }

@@ -49,6 +49,7 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<BookingField, string>>>({});
   const [done, setDone] = useState(false);
+  const [botUrl, setBotUrl] = useState("");
   const [sending, setSending] = useState(false);
 
   function clearFieldError(field: BookingField) {
@@ -138,6 +139,7 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
         return;
       }
       setDone(true);
+      setBotUrl(typeof data.botUrl === "string" ? data.botUrl : "");
       trackGoal("booking_success");
       setSelected(null);
       setName("");
@@ -166,12 +168,27 @@ export function BookingWidget({ copy }: { copy: LandingCopy }) {
             <p className="font-serif text-2xl">{successTitle}</p>
             <p className="mt-2 text-ink-soft">{successText}</p>
             <div className="mt-5 flex flex-wrap gap-3">
+              {botUrl ? (
+                <a
+                  href={botUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-goal="telegram_click"
+                  className="inline-flex rounded-full bg-terracotta px-5 py-2.5 text-sm text-white"
+                >
+                  Открыть бота записи
+                </a>
+              ) : null}
               <a
                 href={SITE.max}
                 target="_blank"
                 rel="noopener noreferrer"
                 data-goal="max_click"
-                className="inline-flex rounded-full bg-terracotta px-5 py-2.5 text-sm text-white"
+                className={`inline-flex rounded-full px-5 py-2.5 text-sm ${
+                  botUrl
+                    ? "border border-sage text-sage-deep"
+                    : "bg-terracotta text-white"
+                }`}
               >
                 {successMaxCta}
               </a>

@@ -19,7 +19,7 @@ model Setting {
   durationMin      Int    @default(55)
   slotStepMin      Int    @default(60)
   meetLink         String @default("")
-  successText      String @default("Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.")
+  successText      String @default("Заявка принята. Откройте бота записи, чтобы видеть время и получить напоминание. Я напишу в MAX или Telegram, чтобы подтвердить встречу.")
   successTitle     String @default("Готово")
   successMaxCta    String @default("Написать в MAX")
   successTelegramCta String @default("Написать в Telegram")
@@ -59,18 +59,37 @@ model AvailabilityException {
 }
 
 model Booking {
-  id         String   @id @default(cuid())
-  slotStart  DateTime @unique
-  slotEnd    DateTime
-  name       String
-  phone      String
-  telegram   String   @default("")
-  email      String   @default("")
-  note       String   @default("")
-  status     String   @default("pending")
-  meetLink   String   @default("")
-  consentAt  DateTime
-  remindedAt DateTime?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id             String    @id @default(cuid())
+  slotStart      DateTime  @unique
+  slotEnd        DateTime
+  name           String
+  phone          String
+  telegram       String    @default("")
+  telegramChatId String    @default("")
+  linkToken      String?   @unique
+  email          String    @default("")
+  note           String    @default("")
+  status         String    @default("pending")
+  meetLink       String    @default("")
+  consentAt      DateTime
+  remindedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model TelegramClient {
+  chatId    String   @id
+  name      String
+  phone     String
+  username  String   @default("")
+  consentAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TelegramSession {
+  chatId    String   @id
+  step      String
+  payload   String   @default("")
+  updatedAt DateTime @updatedAt
 }

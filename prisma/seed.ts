@@ -15,6 +15,8 @@ async function main() {
   });
 
   const successText =
+    "Заявка принята. Откройте бота записи, чтобы видеть время и получить напоминание. Я напишу в MAX или Telegram, чтобы подтвердить встречу.";
+  const legacySuccessText =
     "Заявка принята. Я напишу в MAX или Telegram, чтобы подтвердить время.";
 
   await prisma.setting.upsert({
@@ -35,10 +37,10 @@ async function main() {
   });
 
   const settings = await prisma.setting.findUnique({ where: { id: "default" } });
-  if (settings?.successText.includes("WhatsApp")) {
+  if (settings?.successText.includes("WhatsApp") || settings?.successText === legacySuccessText) {
     await prisma.setting.update({
       where: { id: "default" },
-      data: { successText: settings.successText.replaceAll("WhatsApp", "MAX") },
+      data: { successText },
     });
   }
 

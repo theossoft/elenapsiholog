@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BOOKING_STATUSES, setBookingStatus, type BookingStatus } from "@/lib/booking-status";
+import { notifyClientStatus } from "@/lib/telegram-client";
 import { bookingCard, confirmedKeyboard, notifyTelegram } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
@@ -41,10 +42,12 @@ export async function PATCH(request: Request) {
     await notifyTelegram(bookingCard(booking, "Запись подтверждена"), {
       replyMarkup: confirmedKeyboard(booking.id),
     });
+    await notifyClientStatus(booking);
   }
 
   if (status === "cancelled") {
     await notifyTelegram(bookingCard(booking, "Запись отменена"));
+    await notifyClientStatus(booking);
   }
 
   return NextResponse.json({ booking });

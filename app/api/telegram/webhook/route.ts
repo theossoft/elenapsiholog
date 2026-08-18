@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { setBookingStatus } from "@/lib/booking-status";
 import {
+  handleClientCallback,
+  handleClientMessage,
+  isClientCallback,
+  notifyClientStatus,
+} from "@/lib/telegram-client";
+import {
   adminChatIds,
   adminHelpText,
   adminReplyKeyboard,
@@ -11,7 +17,6 @@ import {
   bookingCard,
   confirmedKeyboard,
   editTelegramMessage,
-  guestHelpText,
   isAdminChat,
   notifyTelegram,
   pendingKeyboard,
@@ -54,7 +59,7 @@ async function handleMessage(message: NonNullable<TelegramUpdate["message"]>) {
   const admin = isAdminChat(message.chat.id, message.from?.id);
 
   if (!admin) {
-    await sendTelegramMessage(message.chat.id, guestHelpText());
+    await handleClientMessage(message);
     return;
   }
 
@@ -120,12 +125,17 @@ async function handleCallback(query: NonNullable<TelegramUpdate["callback_query"
   const chatId = query.message?.chat.id;
   const userId = query.from.id;
   const data = query.data || "";
-  const match = /^(ok|no):(.+)$/.exec(data);
 
   if (!isAdminChat(chatId, userId)) {
+    if (isClientCallback(data)) {
+      await handleClientCallback(query);
+      return;
+    }
     await answerCallback(query.id, "Нет доступа");
     return;
   }
+
+  const match = /^(ok|no):(.+)$/.exec(data);
 
   if (!match || chatId == null || !query.message) {
     await answerCallback(query.id, "Не получилось обработать");
@@ -175,6 +185,7 @@ async function handleCallback(query: NonNullable<TelegramUpdate["callback_query"
       confirmedKeyboard(result.booking.id),
     );
     await notifyOthers(chatId, text, confirmedKeyboard(result.booking.id));
+    await notifyClientStatus(result.booking);
     return;
   }
 
@@ -199,6 +210,7 @@ async function handleCallback(query: NonNullable<TelegramUpdate["callback_query"
   await answerCallback(query.id, "Запись отменена");
   await editTelegramMessage(chatId, query.message.message_id, bookingCard(result.booking, "Запись отменена"));
   await notifyOthers(chatId, bookingCard(result.booking, "Запись отменена"));
+  await notifyClientStatus(result.booking);
 }
 
 function confirmedText(booking: Booking) {
